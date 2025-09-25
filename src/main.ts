@@ -5,6 +5,7 @@ import compression from 'compression';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { SwaggerModule } from '@nestjs/swagger';
 import { SWAGGER_CONFIG } from './config';
+import morgan from 'morgan';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -38,9 +39,11 @@ async function bootstrap() {
     SwaggerModule.createDocument(app, SWAGGER_CONFIG);
   SwaggerModule.setup('docs', app, documentFactory);
 
+  app.use(morgan('dev'));
+
   await app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}/api/v1`);
-    console.log(`Swagger: http://localhost:${PORT}/docs`);
+    console.log(`Swagger: http://localhost:${PORT}/api/docs`);
     console.log(`Node Environment: ${process.env?.NODE_ENV}`);
   });
 }
