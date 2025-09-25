@@ -12,7 +12,7 @@ const envValidationSchema = Joi.object({
     .trim(),
 });
 
-export const envConfig: ConfigModuleOptions<ValidationPipeOptions> = {
+const ENV_CONFIG: ConfigModuleOptions<ValidationPipeOptions> = {
   validationSchema: envValidationSchema,
   isGlobal: true,
   envFilePath: join(
@@ -22,3 +22,5 @@ export const envConfig: ConfigModuleOptions<ValidationPipeOptions> = {
     `${process.env.NODE_ENV || 'development'}.env`,
   ),
 };
+
+export default ENV_CONFIG;

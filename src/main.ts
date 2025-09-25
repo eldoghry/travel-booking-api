@@ -1,9 +1,33 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import helmet from 'helmet';
+import compression from 'compression';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const PORT = process.env.PORT || 3000;
+
+  // Enable CORS
+  app.enableCors({
+    origin: ['http://localhost:3000', 'https://yourdomain.com'],
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+  });
+
+  // Helmet for secure HTTP headers
+  app.use(helmet());
+
+  app.use(compression());
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+      transformOptions: { enableImplicitConversion: true },
+    }),
+  );
+
   await app.listen(PORT, () =>
     console.log(
       `Node Environment: ${process.env?.NODE_ENV} | http://localhost:${process.env?.PORT}`,
