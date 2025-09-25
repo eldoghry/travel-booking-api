@@ -18,6 +18,9 @@ const envValidationSchema = Joi.object({
   DB_USER: Joi.string().required(),
   DB_PASS: Joi.string().required(),
   DB_NAME: Joi.string().required(),
+
+  // REDIS
+  REDIS_URL: Joi.string().required(),
 });
 
 const ENV_CONFIG: ConfigModuleOptions<ValidationPipeOptions> = {
