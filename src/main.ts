@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import helmet from 'helmet';
 import compression from 'compression';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, VersioningType } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -28,9 +28,12 @@ async function bootstrap() {
     }),
   );
 
+  app.setGlobalPrefix('api');
+  app.enableVersioning({ type: VersioningType.URI, defaultVersion: '1' });
+
   await app.listen(PORT, () =>
     console.log(
-      `Node Environment: ${process.env?.NODE_ENV} | http://localhost:${process.env?.PORT}`,
+      `Node Environment: ${process.env?.NODE_ENV} | http://localhost:${process.env?.PORT}/api/v1`,
     ),
   );
 }
