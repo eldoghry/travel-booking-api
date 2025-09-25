@@ -3,6 +3,8 @@ import { AppModule } from './app.module';
 import helmet from 'helmet';
 import compression from 'compression';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
+import { SwaggerModule } from '@nestjs/swagger';
+import { SWAGGER_CONFIG } from './config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -31,10 +33,15 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
   app.enableVersioning({ type: VersioningType.URI, defaultVersion: '1' });
 
-  await app.listen(PORT, () =>
-    console.log(
-      `Node Environment: ${process.env?.NODE_ENV} | http://localhost:${process.env?.PORT}/api/v1`,
-    ),
-  );
+  // Swagger
+  const documentFactory = () =>
+    SwaggerModule.createDocument(app, SWAGGER_CONFIG);
+  SwaggerModule.setup('docs', app, documentFactory);
+
+  await app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}/api/v1`);
+    console.log(`Swagger: http://localhost:${PORT}/docs`);
+    console.log(`Node Environment: ${process.env?.NODE_ENV}`);
+  });
 }
 bootstrap();
