@@ -6,10 +6,12 @@ import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { SwaggerModule } from '@nestjs/swagger';
 import { SWAGGER_CONFIG } from './config';
 import morgan from 'morgan';
+import { Logger } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const PORT = process.env.PORT || 3000;
+  const logger = new Logger('Bootstrap');
 
   // Enable CORS
   app.enableCors({
@@ -42,9 +44,9 @@ async function bootstrap() {
   app.use(morgan('dev'));
 
   await app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}/api/v1`);
-    console.log(`Swagger: http://localhost:${PORT}/api/docs`);
-    console.log(`Node Environment: ${process.env?.NODE_ENV}`);
+    logger.log(`Server is running on http://localhost:${PORT}/api/v1`);
+    logger.log(`Swagger: http://localhost:${PORT}/api/docs`);
+    logger.log(`Node Environment: ${process.env?.NODE_ENV}`);
   });
 }
 bootstrap();
