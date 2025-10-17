@@ -1,5 +1,10 @@
-/node_modules
-/dist
+node_modules
+dist
+.env
+env/
+.git
+.gitignore
+docker-compose.yaml
+docker-compose.development.yaml
 Dockerfile
-README.md
-docker-compose*
+nginx/

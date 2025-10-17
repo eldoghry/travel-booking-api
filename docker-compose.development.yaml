@@ -6,7 +6,8 @@ services:
       context: .
       target: development
     volumes:
-      - ./src:/app/src:ro
+      - .:/app
+      - /app/node_modules
     environment:
       - NODE_ENV=development
     command: ["npm", "run", "start:dev"]
