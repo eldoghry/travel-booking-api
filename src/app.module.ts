@@ -19,7 +19,9 @@ import {
   ResourceGuard,
   RoleGuard,
 } from 'nest-keycloak-connect';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { AuthModule } from './modules/auth/auth.module';
+import { KeycloakAuthSyncInterceptor } from './modules/auth/interceptors/keycloak-auth.interceptor';
 
 @Module({
   imports: [
@@ -29,10 +31,13 @@ import { APP_GUARD } from '@nestjs/core';
     CacheModule.registerAsync(CACHE_CONFIG),
     KeycloakConnectModule.registerAsync(KEYCLOAK_OPTIONS),
     UsersModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [
     AppService,
+
+    // 🔒 Guards for keycloak
     {
       provide: APP_GUARD,
       useClass: AuthGuard,
@@ -44,6 +49,12 @@ import { APP_GUARD } from '@nestjs/core';
     {
       provide: APP_GUARD,
       useClass: RoleGuard,
+    },
+
+    // 🔁 Interceptor for user sync
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: KeycloakAuthSyncInterceptor,
     },
   ],
 })

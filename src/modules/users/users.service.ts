@@ -16,7 +16,7 @@ export class UsersService {
   }
 
   findAll() {
-    return this.userRepository.findAll();
+    return this.userRepository.find();
     console.log('Finding all users');
     return `This action returns all users`;
   }
@@ -40,5 +40,23 @@ export class UsersService {
 
   remove(id: number) {
     return `This action removes a #${id} user`;
+  }
+
+  async findByKeycloakId(keycloakId: string) {
+    return this.userRepository.findOne({ where: { keycloakId } });
+  }
+
+  async createFromKeycloak(keycloakUser: any) {
+    const entity = this.userRepository.create({
+      keycloakId: keycloakUser.sub,
+      email: keycloakUser.email,
+      username: keycloakUser.preferred_username ?? '',
+      firstName: keycloakUser.given_name ?? '',
+      lastName: keycloakUser.family_name ?? '',
+    });
+
+    const save = await this.userRepository.save(entity);
+
+    return this.userRepository.findOne({ where: { id: save.id } });
   }
 }
