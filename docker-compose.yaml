@@ -48,7 +48,8 @@ services:
     command:
       - start-dev
       - --hostname-strict=false
-      # - --hostname=keycloak
+      # - --hostname-url=http://localhost:8080
+      # - --hostname=localhost
     environment:
       KC_DB: postgres
       KC_DB_URL_HOST: postgres-srv
@@ -59,7 +60,7 @@ services:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
     volumes:
-      - ./keycloak/travel_booking_realm-realm.json:/opt/keycloak/data/import
+      - ./keycloak:/opt/keycloak/data/import
     ports:
       - "8080:8080"
     depends_on:
