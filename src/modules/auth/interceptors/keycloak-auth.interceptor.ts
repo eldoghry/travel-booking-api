@@ -6,10 +6,14 @@ import {
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { UsersService } from '../../../modules/users/users.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class KeycloakAuthSyncInterceptor implements NestInterceptor {
-  constructor(private readonly userService: UsersService) {}
+  constructor(
+    private readonly userService: UsersService,
+    private readonly configService: ConfigService,
+  ) {}
 
   async intercept(
     context: ExecutionContext,
@@ -29,7 +33,13 @@ export class KeycloakAuthSyncInterceptor implements NestInterceptor {
       }
 
       // add roles
-      request.user = user;
+      const clientId = this.configService.get<string>(
+        'KEYCLOAK_CLIENT_ID',
+      ) as string;
+
+      const roles = keycloakUser.realm_access?.roles || [];
+      roles.push(...(keycloakUser.resource_access?.[clientId]?.roles || []));
+      request.user = { ...user, roles };
     }
 
     return next.handle();
