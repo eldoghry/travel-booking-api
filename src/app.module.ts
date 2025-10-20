@@ -12,6 +12,7 @@ import {
   CACHE_CONFIG,
 } from './config';
 import { UsersModule } from './modules/users/users.module';
+import { ElasticAnalyticsModule } from './modules/elastic-analytics/elastic-analytics.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { UsersModule } from './modules/users/users.module';
     TypeOrmModule.forRootAsync(TYPEORM_CONFIG),
     CacheModule.registerAsync(CACHE_CONFIG),
     UsersModule,
+    ElasticAnalyticsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
