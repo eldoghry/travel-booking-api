@@ -18,7 +18,7 @@ export class FlightProviderManager {
     if (!this.currentProvider || this.lastProviderName !== providerName) {
       this.currentProvider = FlightProviderFactory.createProvider(providerName);
       this.lastProviderName = providerName;
-      this.logger.log(`✈️ Switched flight provider to: ${providerName}`);
+      this.logger.log(`✈️  Switched flight provider to: ${providerName}`);
     }
 
     return this.currentProvider;
