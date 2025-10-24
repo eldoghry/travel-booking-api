@@ -1,9 +1,4 @@
-import {
-  CallHandler,
-  ExecutionContext,
-  Injectable,
-  NestInterceptor,
-} from '@nestjs/common';
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { UsersService } from '../../../modules/users/users.service';
 import { ConfigService } from '@nestjs/config';
@@ -15,10 +10,7 @@ export class KeycloakAuthSyncInterceptor implements NestInterceptor {
     private readonly configService: ConfigService,
   ) {}
 
-  async intercept(
-    context: ExecutionContext,
-    next: CallHandler<any>,
-  ): Promise<Observable<any>> {
+  async intercept(context: ExecutionContext, next: CallHandler<any>): Promise<Observable<any>> {
     const request = context.switchToHttp().getRequest();
     const keycloakUser = request.user;
 
@@ -33,9 +25,7 @@ export class KeycloakAuthSyncInterceptor implements NestInterceptor {
       }
 
       // add roles
-      const clientId = this.configService.get<string>(
-        'KEYCLOAK_CLIENT_ID',
-      ) as string;
+      const clientId = this.configService.get<string>('KEYCLOAK_CLIENT_ID') as string;
 
       const roles = keycloakUser.realm_access?.roles || [];
       roles.push(...(keycloakUser.resource_access?.[clientId]?.roles || []));
