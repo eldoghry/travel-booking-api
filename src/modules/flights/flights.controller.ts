@@ -1,6 +1,6 @@
-import { Controller, Get, Post, Body, Param, HttpStatus, HttpCode } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, HttpStatus, HttpCode, Query } from '@nestjs/common';
 import { FlightsService } from './flights.service';
-import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { FlightBookingDto, FlightBookingResponseDto } from './dto/flight-book.dto';
 import { FlightDetailsDto, FlightDetailsResponseDto } from './dto/flight-details.dto';
 import { FlightSearchDto, FlightSearchResponseDto } from './dto/flight-search.dto';
@@ -10,16 +10,16 @@ import { FlightSearchDto, FlightSearchResponseDto } from './dto/flight-search.dt
 export class FlightsController {
   constructor(private readonly flightsService: FlightsService) {}
 
-  @Post('search')
-  @ApiBody({ type: FlightSearchDto })
+  @Get('search')
+  @ApiQuery({ type: FlightSearchDto })
   @ApiResponse({ status: HttpStatus.OK, type: FlightSearchResponseDto })
   @HttpCode(HttpStatus.OK)
-  searchFlights(@Body() searchFlightDto: FlightSearchDto) {
+  searchFlights(@Query() searchFlightDto: FlightSearchDto) {
     return this.flightsService.searchFlights(searchFlightDto);
   }
 
   @Get('details/:id')
-  @ApiBody({ type: FlightDetailsDto })
+  @ApiParam({ name: 'id', type: String })
   @ApiResponse({ status: HttpStatus.OK, type: FlightDetailsResponseDto })
   getFlightDetails(@Param('id') id: string) {
     return this.flightsService.getFlightDetails(id);

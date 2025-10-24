@@ -4,6 +4,7 @@ import { AmadeusAxiosService } from 'src/common/amadeus/amadeus-axios.service';
 import { AxiosInstance } from 'axios';
 import { Injectable } from '@nestjs/common';
 import { AmadeusEndpoints } from 'src/common/amadeus/amadeus-request';
+import { formatDateToYMD } from 'src/common/utils/helper';
 
 @Injectable()
 export class AmadeusFlightProvider implements FlightProvider {
@@ -16,11 +17,11 @@ export class AmadeusFlightProvider implements FlightProvider {
   async searchFlights(criteria: FlightSearchDto): Promise<any> {
     const data = await this.axios.get(AmadeusEndpoints.FLIGHT_SEARCH, {
       params: {
-        originLocationCode: 'CAI',
-        destinationLocationCode: 'JED',
-        departureDate: '2025-12-01',
-        returnDate: '2025-12-31',
-        adults: 1,
+        originLocationCode: criteria.origin,
+        destinationLocationCode: criteria.destination,
+        departureDate: formatDateToYMD(criteria.departureDate),
+        returnDate: criteria?.returnDate ? formatDateToYMD(criteria.returnDate) : undefined,
+        adults: criteria.adults || 1,
       },
     });
 
