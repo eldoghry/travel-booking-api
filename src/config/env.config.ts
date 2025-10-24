@@ -21,6 +21,12 @@ const envValidationSchema = Joi.object({
 
   // REDIS
   REDIS_URL: Joi.string().required(),
+
+  // KEYCLOAK
+  KEYCLOAK_AUTH_URL: Joi.string().required(),
+  KEYCLOAK_REALM: Joi.string().required(),
+  KEYCLOAK_CLIENT_ID: Joi.string().required(),
+  KEYCLOAK_CLIENT_SECRET: Joi.string().required(),
 });
 
 const ENV_CONFIG: ConfigModuleOptions<ValidationPipeOptions> = {

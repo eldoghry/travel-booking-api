@@ -10,8 +10,18 @@ import {
   THROTTLE_CONFIG,
   TYPEORM_CONFIG,
   CACHE_CONFIG,
+  KEYCLOAK_OPTIONS,
 } from './config';
 import { UsersModule } from './modules/users/users.module';
+import {
+  KeycloakConnectModule,
+  AuthGuard,
+  ResourceGuard,
+  RoleGuard,
+} from 'nest-keycloak-connect';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { AuthModule } from './modules/auth/auth.module';
+import { KeycloakAuthSyncInterceptor } from './modules/auth/interceptors/keycloak-auth.interceptor';
 
 @Module({
   imports: [
@@ -19,9 +29,33 @@ import { UsersModule } from './modules/users/users.module';
     ThrottlerModule.forRoot(THROTTLE_CONFIG),
     TypeOrmModule.forRootAsync(TYPEORM_CONFIG),
     CacheModule.registerAsync(CACHE_CONFIG),
+    KeycloakConnectModule.registerAsync(KEYCLOAK_OPTIONS),
     UsersModule,
+    AuthModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+
+    // 🔒 Guards for keycloak
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ResourceGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RoleGuard,
+    },
+
+    // 🔁 Interceptor for user sync
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: KeycloakAuthSyncInterceptor,
+    },
+  ],
 })
 export class AppModule {}

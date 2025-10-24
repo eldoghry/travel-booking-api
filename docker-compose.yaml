@@ -42,6 +42,31 @@ services:
       - postgres-db:/var/lib/postgresql/data
     networks:
       - app_network
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.4.0
+    container_name: keycloak
+    command:
+      - start-dev
+      - --hostname-strict=false
+      # - --hostname-url=http://localhost:8080
+      # - --hostname=localhost
+    environment:
+      KC_DB: postgres
+      KC_DB_URL_HOST: postgres-srv
+      KC_DB_URL_DATABASE: keycloak_db
+      KC_DB_USERNAME: postgres
+      KC_DB_PASSWORD: postgres
+      KC_HOSTNAME: localhost
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    volumes:
+      - ./keycloak:/opt/keycloak/data/import
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres-srv
+    networks:
+      - app_network
 
 volumes:
   postgres-db:
