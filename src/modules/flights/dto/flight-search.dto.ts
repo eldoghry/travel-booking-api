@@ -1,13 +1,16 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsDate, IsEnum, IsInt, IsOptional, IsString, Min } from 'class-validator';
+import { IsDate, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
+import { IsIataCode } from '../../../validators/is-iataCode.validator';
 
 export class FlightSearchDto {
   @ApiProperty({ example: 'CAI' })
-  @IsString()
+  @IsNotEmpty()
+  @IsIataCode()
   origin: string;
 
   @ApiProperty({ example: 'JED' })
-  @IsString()
+  @IsNotEmpty()
+  @IsIataCode()
   destination: string;
 
   @ApiProperty({ example: '2025-12-01' })
