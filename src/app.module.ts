@@ -13,15 +13,11 @@ import {
   KEYCLOAK_OPTIONS,
 } from './config';
 import { UsersModule } from './modules/users/users.module';
-import {
-  KeycloakConnectModule,
-  AuthGuard,
-  ResourceGuard,
-  RoleGuard,
-} from 'nest-keycloak-connect';
+import { KeycloakConnectModule, AuthGuard, ResourceGuard, RoleGuard } from 'nest-keycloak-connect';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AuthModule } from './modules/auth/auth.module';
 import { KeycloakAuthSyncInterceptor } from './modules/auth/interceptors/keycloak-auth.interceptor';
+import { FlightsModule } from './modules/flights/flights.module';
 
 @Module({
   imports: [
@@ -32,6 +28,7 @@ import { KeycloakAuthSyncInterceptor } from './modules/auth/interceptors/keycloa
     KeycloakConnectModule.registerAsync(KEYCLOAK_OPTIONS),
     UsersModule,
     AuthModule,
+    FlightsModule,
   ],
   controllers: [AppController],
   providers: [
