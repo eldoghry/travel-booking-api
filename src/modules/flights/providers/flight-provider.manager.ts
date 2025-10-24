@@ -8,7 +8,7 @@ export class FlightProviderManager {
   private lastProviderName: string;
   private readonly logger = new Logger(FlightProviderManager.name);
 
-  constructor() {
+  constructor(private readonly flightProviderFactory: FlightProviderFactory) {
     // Initialize the current provider and last provider name
   }
 
@@ -16,7 +16,7 @@ export class FlightProviderManager {
     const providerName = 'amadeus'; // TODO: later take it from config | database | cache
 
     if (!this.currentProvider || this.lastProviderName !== providerName) {
-      this.currentProvider = FlightProviderFactory.createProvider(providerName);
+      this.currentProvider = this.flightProviderFactory.createProvider(providerName);
       this.lastProviderName = providerName;
       this.logger.log(`✈️  Switched flight provider to: ${providerName}`);
     }
