@@ -20,6 +20,7 @@ export class FlightsController {
   }
 
   @Post('details')
+  @HttpCode(HttpStatus.OK)
   @ApiBody({ type: FlightDetailsDto })
   @ApiResponse({ status: HttpStatus.OK, type: FlightDetailsResponseDto })
   getFlightDetails(@Body() flightDetailsDto: FlightDetailsDto) {
@@ -28,7 +29,7 @@ export class FlightsController {
 
   @Post('book')
   @ApiBody({ type: FlightBookingDto })
-  @ApiResponse({ status: HttpStatus.OK, type: FlightBookingResponseDto })
+  @ApiResponse({ status: 200, description: 'Booking successful', type: FlightBookingResponseDto })
   @HttpCode(HttpStatus.OK)
   bookFlight(@Body() flightBookingDto: FlightBookingDto) {
     return this.flightsService.bookFlight(flightBookingDto);
