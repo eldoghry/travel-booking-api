@@ -1,11 +1,12 @@
 import { Controller, Get, Post, Body, Param, HttpStatus, HttpCode, Query } from '@nestjs/common';
 import { FlightsService } from './flights.service';
-import { ApiBody, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { FlightBookingDto, FlightBookingResponseDto } from './dto/flight-book.dto';
 import { FlightDetailsDto, FlightDetailsResponseDto } from './dto/flight-details.dto';
 import { FlightSearchDto, FlightSearchResponseDto } from './dto/flight-search.dto';
 
 @ApiTags('Flights')
+@ApiBearerAuth('JWT')
 @Controller('flights')
 export class FlightsController {
   constructor(private readonly flightsService: FlightsService) {}
