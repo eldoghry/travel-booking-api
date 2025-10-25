@@ -6,6 +6,7 @@ import { Injectable } from '@nestjs/common';
 import { AmadeusEndpoints } from 'src/common/amadeus/amadeus-request';
 import { formatDateToYMD } from 'src/common/utils/helper';
 import { FlightSummary } from '../interfaces/fligth-summary.interface';
+import { FlightBookingSummary } from '../interfaces/flight-booking-summary.interface';
 
 @Injectable()
 export class AmadeusFlightProvider implements FlightProvider {
@@ -95,6 +96,63 @@ export class AmadeusFlightProvider implements FlightProvider {
       cabinClass,
       baggage,
       warnings,
+    };
+  }
+
+  getFlightBookingSummary(flightBookingResponse: any): FlightBookingSummary {
+    const data = flightBookingResponse?.data;
+    const provider = 'amadeus';
+    const orderId = data?.id;
+    const flightOffer = data?.flightOffers?.[0];
+    const pnr = data?.associatedRecords?.[0]?.reference || '';
+    const creationDate = data?.associatedRecords?.[0]?.creationDate || '';
+    const airline = flightOffer?.validatingAirlineCodes?.[0] || 'UNKNOWN';
+    const price = flightOffer?.price || {};
+
+    // --- Travelers ---
+    const travelers = (data?.travelers || []).map((t: any) => ({
+      id: t.id,
+      fullName: `${t.name.firstName} ${t.name.lastName}`,
+      gender: t.gender,
+      dateOfBirth: t.dateOfBirth,
+    }));
+
+    // --- Documents ---
+    const documents = (data?.travelers?.[0]?.documents || []).map((d: any) => ({
+      type: d.documentType,
+      number: d.number,
+      nationality: d.nationality,
+    }));
+
+    // --- Itineraries ---
+    const itineraries =
+      flightOffer?.itineraries?.map((it: any) => {
+        const firstSeg = it.segments[0];
+        const lastSeg = it.segments[it.segments.length - 1];
+        return {
+          from: firstSeg.departure.iataCode,
+          to: lastSeg.arrival.iataCode,
+          departure: firstSeg.departure.at,
+          arrival: lastSeg.arrival.at,
+          duration: it.segments
+            .map((s: any) => s.duration.replace('PT', '').replace('H', 'h ').replace('M', 'm'))
+            .join(' + '),
+          segments: it.segments.length,
+        };
+      }) || [];
+
+    return {
+      orderId,
+      provider,
+      pnr,
+      totalPrice: price.total,
+      currency: price.currency,
+      airline,
+      travelers,
+      itineraries,
+      documents,
+      ticketingStatus: data.ticketingAgreement?.option || 'UNKNOWN',
+      creationDate,
     };
   }
 }

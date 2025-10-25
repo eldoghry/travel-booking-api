@@ -12,6 +12,7 @@ import {
 import { Type } from 'class-transformer';
 import { FlightDetailsDto } from './flight-details.dto';
 import { ApiProperty } from '@nestjs/swagger';
+import type { FlightBookingSummary } from '../interfaces/flight-booking-summary.interface';
 
 export enum GenderEnum {
   MALE = 'MALE',
@@ -155,4 +156,10 @@ export class FlightBookingDto extends FlightDetailsDto {
   travelers: PassengerDto[];
 }
 
-export class FlightBookingResponseDto {}
+export class FlightBookingResponseDto {
+  @ApiProperty()
+  flightBookingSummary: FlightBookingSummary;
+
+  @ApiProperty()
+  providerResult: any;
+}

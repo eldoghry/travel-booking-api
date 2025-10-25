@@ -45,4 +45,13 @@ export class FlightSearchDto {
   currency?: string;
 }
 
-export class FlightSearchResponseDto {}
+export class FlightSearchResponseDto {
+  @ApiProperty()
+  searchId: string;
+
+  @ApiProperty()
+  provider: string;
+
+  @ApiProperty()
+  providerResult: any;
+}

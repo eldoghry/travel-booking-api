@@ -76,10 +76,14 @@ export class FlightsService {
       dto.offerPriceId,
     );
 
-    return provider.bookFlight({
+    const providerResult = await provider.bookFlight({
       ...offerPriceData,
       travelers: dto.travelers.map((item, index) => ({ id: index + 1, ...item })),
     });
+
+    const flightBookingSummary = provider.getFlightBookingSummary(providerResult);
+
+    return { flightBookingSummary, providerResult };
   }
 
   private async _extractFlightSearchDataFromCache(
