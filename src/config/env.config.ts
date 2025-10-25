@@ -17,13 +17,19 @@ const envValidationSchema = Joi.object({
   DB_NAME: Joi.string().required(),
 
   // REDIS
-  REDIS_URL: Joi.string().required(),
+  REDIS_HOST: Joi.string().required(),
+  REDIS_PORT: Joi.number().default(6379),
 
   // KEYCLOAK
   KEYCLOAK_AUTH_URL: Joi.string().required(),
   KEYCLOAK_REALM: Joi.string().required(),
   KEYCLOAK_CLIENT_ID: Joi.string().required(),
   KEYCLOAK_CLIENT_SECRET: Joi.string().required(),
+
+  //AMADEUS
+  AMADEUS_API_KEY: Joi.string().required(),
+  AMADEUS_API_SECRET: Joi.string().required(),
+  AMADEUS_API_BASE_URL: Joi.string().uri().required(),
 });
 
 const ENV_CONFIG: ConfigModuleOptions<ValidationPipeOptions> = {
