@@ -41,7 +41,16 @@ export class AmadeusFlightProvider implements FlightProvider {
     return data;
   }
 
-  async bookFlight(data: any): Promise<any> {
-    throw new Error('[AmadeusFlightProvider] Method not implemented.');
+  async bookFlight(flightPriceOffer: any): Promise<any> {
+    const { travelers, ...flightOffers } = flightPriceOffer;
+    const data = await this.axios.post(AmadeusEndpoints.FLIGHT_BOOKING, {
+      data: {
+        type: 'flight-order',
+        flightOffers: [flightOffers],
+        travelers: flightPriceOffer.travelers,
+      },
+    });
+
+    return data;
   }
 }

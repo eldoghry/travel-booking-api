@@ -5,7 +5,7 @@ import { FlightBookingDto, FlightBookingResponseDto } from './dto/flight-book.dt
 import { FlightDetailsDto, FlightDetailsResponseDto } from './dto/flight-details.dto';
 import { FlightSearchDto, FlightSearchResponseDto } from './dto/flight-search.dto';
 
-@ApiTags('flights')
+@ApiTags('Flights')
 @Controller('flights')
 export class FlightsController {
   constructor(private readonly flightsService: FlightsService) {}
