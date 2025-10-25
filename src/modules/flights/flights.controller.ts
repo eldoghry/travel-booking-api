@@ -18,11 +18,11 @@ export class FlightsController {
     return this.flightsService.searchFlights(searchFlightDto);
   }
 
-  @Get('details/:id')
-  @ApiParam({ name: 'id', type: String })
+  @Post('details')
+  @ApiBody({ type: FlightDetailsDto })
   @ApiResponse({ status: HttpStatus.OK, type: FlightDetailsResponseDto })
-  getFlightDetails(@Param('id') id: string) {
-    return this.flightsService.getFlightDetails(id);
+  getFlightDetails(@Body() flightDetailsDto: FlightDetailsDto) {
+    return this.flightsService.getFlightDetails(flightDetailsDto);
   }
 
   @Post('book')

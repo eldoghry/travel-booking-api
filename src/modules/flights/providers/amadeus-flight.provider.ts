@@ -9,9 +9,11 @@ import { formatDateToYMD } from 'src/common/utils/helper';
 @Injectable()
 export class AmadeusFlightProvider implements FlightProvider {
   private readonly axios: AxiosInstance;
+  providerName: string;
 
   constructor(private readonly amadeusAxiosService: AmadeusAxiosService) {
     this.axios = this.amadeusAxiosService.axiosInstance;
+    this.providerName = 'amadeus';
   }
 
   async searchFlights(criteria: FlightSearchDto): Promise<any> {
@@ -28,8 +30,15 @@ export class AmadeusFlightProvider implements FlightProvider {
     return data;
   }
 
-  async getFlightDetails(flightId: string): Promise<any> {
-    throw new Error('[AmadeusFlightProvider] Method not implemented.');
+  async getFlightDetails(flightOffer: any): Promise<any> {
+    const data = await this.axios.post(AmadeusEndpoints.FLIGHT_OFFER_PRICE, {
+      data: {
+        type: 'flight-offers-pricing',
+        flightOffers: [flightOffer],
+      },
+    });
+
+    return data;
   }
 
   async bookFlight(data: any): Promise<any> {

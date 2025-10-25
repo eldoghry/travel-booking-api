@@ -12,8 +12,8 @@ export class FlightProviderManager {
     // Initialize the current provider and last provider name
   }
 
-  async getProvider(): Promise<FlightProvider> {
-    const providerName = 'amadeus'; // TODO: later take it from config | database | cache
+  async getProvider(providerName: string = 'amadeus'): Promise<FlightProvider> {
+    // const providerName = 'amadeus'; // TODO: later take it from config | database | cache
 
     if (!this.currentProvider || this.lastProviderName !== providerName) {
       this.currentProvider = this.flightProviderFactory.createProvider(providerName);
