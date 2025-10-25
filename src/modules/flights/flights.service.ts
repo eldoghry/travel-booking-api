@@ -18,7 +18,6 @@ export class FlightsService {
     return `flight:${prefix}:${provider}:${id}`;
   }
 
-  // TODO: define dtos response
   async searchFlights(dto: FlightSearchDto): Promise<FlightSearchResponseDto> {
     const provider = await this.flightProviderManager.getProvider();
     console.log(`🔍 Searching flights with provider: ${provider.providerName}`);
@@ -29,14 +28,15 @@ export class FlightsService {
 
     await this.redisService.set(cacheKey, JSON.stringify(data), this.ttl);
 
-    return {
+    const result: FlightSearchResponseDto = {
       searchId,
       provider: provider.providerName,
-      data, // todo: reformat data
+      providerResult: data,
     };
+
+    return result;
   }
 
-  // TODO: define dto response
   async getFlightDetails(dto: FlightDetailsDto): Promise<FlightDetailsResponseDto> {
     const provider = await this.flightProviderManager.getProvider(dto.provider);
 
@@ -46,19 +46,24 @@ export class FlightsService {
       dto.flightId,
     );
 
-    const result = await provider.getFlightDetails(flightOffer);
+    const providerResult = await provider.getFlightDetails(flightOffer);
 
     const offerPriceId = crypto.randomUUID();
     const cacheKey = this._generateCacheKey('price', provider.providerName, offerPriceId);
-    await this.redisService.set(cacheKey, JSON.stringify(result), this.ttl);
+    await this.redisService.set(cacheKey, JSON.stringify(providerResult), this.ttl);
 
-    return {
+    const summary = provider.getFlightPriceSummary(providerResult);
+
+    const result: FlightDetailsResponseDto = {
       searchId: dto.searchId,
       offerPriceId,
-      offerId: dto.flightId,
+      flightId: dto.flightId,
       provider: provider.providerName,
-      data: result,
+      summary,
+      providerResult,
     };
+
+    return result;
   }
 
   // TODO: define dtos request & response
