@@ -20,12 +20,14 @@ import { KeycloakAuthSyncInterceptor } from './modules/auth/interceptors/keycloa
 import { FlightsModule } from './modules/flights/flights.module';
 import { AxiosModule } from './common/axios/axios.module';
 import { AmadeusModule } from './common/amadeus/amadeus.module';
+import { RedisModule } from './common/redis/redis.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot(ENV_CONFIG),
     ThrottlerModule.forRoot(THROTTLE_CONFIG),
     TypeOrmModule.forRootAsync(TYPEORM_CONFIG),
+    RedisModule,
     CacheModule.registerAsync(CACHE_CONFIG),
     KeycloakConnectModule.registerAsync(KEYCLOAK_OPTIONS),
     UsersModule,
