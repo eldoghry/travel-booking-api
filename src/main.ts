@@ -37,6 +37,15 @@ async function bootstrap() {
     }),
   );
 
+  // Global Response Interceptor for Success to apply consistent response format
+  app.useGlobalInterceptors(new TransformResponseInterceptor()); 
+
+  // global interceptor
+  app.useGlobalInterceptors(
+    new LoggingInterceptor(), // logging interceptor
+    new ClassSerializerInterceptor(app.get(Reflector)), // Enable ClassSerializerInterceptor globally to serialize responses
+  );
+
   app.setGlobalPrefix('api');
   app.enableVersioning({ type: VersioningType.URI, defaultVersion: '1' });
 
