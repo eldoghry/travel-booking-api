@@ -65,7 +65,7 @@ services:
       - app_network
 
   kibana:
-    image: docker.elastic.co/kibana/kibana:8.8.2
+    image: docker.elastic.co/kibana/kibana:8.8.2 # should be same as elasticsearch version
     container_name: kibana
     environment:
       ELASTICSEARCH_HOSTS: "http://elasticsearch:9200"
@@ -78,8 +78,25 @@ services:
     networks:
       - app_network
 
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:8.8.2 # should be same as elasticsearch version
+    container_name: filebeat
+    user: root
+    restart: unless-stopped
+    volumes:
+      - ./filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - ./logs:/var/log/app:ro
+      - filebeat-data:/usr/share/filebeat/data
+    command: filebeat -e -strict.perms=false
+    depends_on:
+      - elasticsearch
+    networks:
+      - app_network
+
 volumes:
   postgres-db:
+  es-data:
+  filebeat-data:
 
 networks:
   app_network:

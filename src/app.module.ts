@@ -12,7 +12,6 @@ import {
   CACHE_CONFIG,
 } from './config';
 import { UsersModule } from './modules/users/users.module';
-import { ElasticAnalyticsModule } from './modules/elastic-analytics/elastic-analytics.module';
 
 @Module({
   imports: [
@@ -20,8 +19,7 @@ import { ElasticAnalyticsModule } from './modules/elastic-analytics/elastic-anal
     ThrottlerModule.forRoot(THROTTLE_CONFIG),
     TypeOrmModule.forRootAsync(TYPEORM_CONFIG),
     CacheModule.registerAsync(CACHE_CONFIG),
-    UsersModule,
-    ElasticAnalyticsModule,
+    UsersModule
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,0 +1,69 @@
+filebeat.inputs:
+- type: filestream
+  enabled: true
+  id: nestjs-app-logs
+  paths:
+    - /var/log/app/*.log
+  
+  # Exclude archived files
+  exclude_files: ['.gz$', '.zip$']
+  
+  # Parse JSON logs
+  parsers:
+    - ndjson:
+        keys_under_root: true
+        add_error_key: true
+        overwrite_keys: true
+  
+  # Add custom fields
+  fields:
+    app: nestjs-app
+    environment: ${ENVIRONMENT:development}
+  fields_under_root: false
+  
+  # File identity (best for log rotation)
+  file_identity.native: ~
+  
+  # Prospector settings
+  prospector:
+    scanner:
+      check_interval: 10s
+      symlinks: true
+  
+  # Close settings
+  close:
+    on_state_change:
+      inactive: 5m
+      removed: true
+      renamed: true
+  
+  # Ignore old files
+  ignore_older: 48h
+  
+  # Clean removed files from registry
+  clean_removed: true
+
+# Add processors for enrichment
+processors:
+  - add_host_metadata:
+      when.not.contains.tags: forwarded
+  - add_docker_metadata: ~
+
+# Elasticsearch output
+output.elasticsearch:
+  hosts: ["elasticsearch:9200"]
+  index: "nestjs-logs-%{[fields.environment]}-%{+yyyy.MM.dd}"
+
+# Index template setup
+setup.template.name: "nestjs-logs"
+setup.template.pattern: "nestjs-logs-*"
+setup.ilm.enabled: false
+
+# Logging
+logging.level: info
+logging.to_files: true
+logging.files:
+  path: /var/log/filebeat
+  name: filebeat
+  keepfiles: 7
+  permissions: 0644
