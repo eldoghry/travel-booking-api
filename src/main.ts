@@ -53,8 +53,7 @@ async function bootstrap() {
   app.enableVersioning({ type: VersioningType.URI, defaultVersion: '1' });
 
   // Swagger
-  const documentFactory = () =>
-    SwaggerModule.createDocument(app, SWAGGER_CONFIG);
+  const documentFactory = () => SwaggerModule.createDocument(app, SWAGGER_CONFIG);
   SwaggerModule.setup('docs', app, documentFactory);
 
   app.use(morgan('dev'));

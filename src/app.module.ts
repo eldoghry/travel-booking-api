@@ -13,25 +13,28 @@ import {
   KEYCLOAK_OPTIONS,
 } from './config';
 import { UsersModule } from './modules/users/users.module';
-import {
-  KeycloakConnectModule,
-  AuthGuard,
-  ResourceGuard,
-  RoleGuard,
-} from 'nest-keycloak-connect';
+import { KeycloakConnectModule, AuthGuard, ResourceGuard, RoleGuard } from 'nest-keycloak-connect';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AuthModule } from './modules/auth/auth.module';
 import { KeycloakAuthSyncInterceptor } from './modules/auth/interceptors/keycloak-auth.interceptor';
+import { FlightsModule } from './modules/flights/flights.module';
+import { AxiosModule } from './common/axios/axios.module';
+import { AmadeusModule } from './common/amadeus/amadeus.module';
+import { RedisModule } from './common/redis/redis.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot(ENV_CONFIG),
     ThrottlerModule.forRoot(THROTTLE_CONFIG),
     TypeOrmModule.forRootAsync(TYPEORM_CONFIG),
+    RedisModule,
     CacheModule.registerAsync(CACHE_CONFIG),
     KeycloakConnectModule.registerAsync(KEYCLOAK_OPTIONS),
     UsersModule,
     AuthModule,
+    FlightsModule,
+    AxiosModule,
+    AmadeusModule,
   ],
   controllers: [AppController],
   providers: [
