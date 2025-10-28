@@ -4,7 +4,7 @@ FROM base as development
 
 WORKDIR /app
 COPY package.json .
-RUN apt update && npm install
+RUN apt update && npm install --legacy-peer-deps
 COPY . .
 EXPOSE 4000
 CMD [ "npm","run", "start:dev" ]

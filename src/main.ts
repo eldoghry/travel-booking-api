@@ -7,6 +7,9 @@ import { SwaggerModule } from '@nestjs/swagger';
 import { SWAGGER_CONFIG } from './config';
 import morgan from 'morgan';
 import { Logger } from '@nestjs/common';
+import { HttpExceptionFilter } from './filters/http-exception.filter';
+import { QueryExceptionFilter } from './filters/query-exception.filter';
+import { AllExceptionsFilter } from './filters/all-exception.filter';
 import { WinstonModule } from 'nest-winston';
 import winstonConfig from './config/logger.config';
 import { TransformResponseInterceptor } from './interceptors/transform-response.interceptor';
@@ -56,10 +59,17 @@ async function bootstrap() {
 
   app.use(morgan('dev'));
 
+  // Register filters globally
+  app.useGlobalFilters(
+    new HttpExceptionFilter(),
+    new QueryExceptionFilter(),
+    new AllExceptionsFilter(),
+  );
+
   await app.listen(PORT, () => {
     logger.log(`Server is running on http://localhost:${PORT}/api/v1`);
     logger.log(`Swagger: http://localhost:${PORT}/api/docs`);
-    logger.log(`Node Environment: ${process.env?.NODE_ENV}`);
+    logger.log(`Node Environment: [${process.env?.NODE_ENV}]`);
   });
 }
 bootstrap();

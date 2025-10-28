@@ -12,6 +12,7 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
+import { KeycloakAuthSyncInterceptor } from '../auth/interceptors/keycloak-auth.interceptor';
 
 @Controller('users')
 export class UsersController {
@@ -22,7 +23,7 @@ export class UsersController {
     return this.usersService.create(createUserDto);
   }
 
-  @UseInterceptors(CacheInterceptor)
+  @UseInterceptors(CacheInterceptor, KeycloakAuthSyncInterceptor)
   @CacheKey('custom_key')
   @CacheTTL(60000) // this not work with redis store, use cachemanager to Workarounds it
   @Get()
