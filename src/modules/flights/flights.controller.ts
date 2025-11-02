@@ -4,9 +4,11 @@ import { ApiBearerAuth, ApiBody, ApiParam, ApiQuery, ApiResponse, ApiTags } from
 import { FlightBookingDto, FlightBookingResponseDto } from './dto/flight-book.dto';
 import { FlightDetailsDto, FlightDetailsResponseDto } from './dto/flight-details.dto';
 import { FlightSearchDto, FlightSearchResponseDto } from './dto/flight-search.dto';
+import { Public } from 'nest-keycloak-connect';
 
+@Public()
 @ApiTags('Flights')
-@ApiBearerAuth('JWT')
+// @ApiBearerAuth('JWT')
 @Controller('flights')
 export class FlightsController {
   constructor(private readonly flightsService: FlightsService) {}

@@ -21,6 +21,7 @@ import { FlightsModule } from './modules/flights/flights.module';
 import { AxiosModule } from './common/axios/axios.module';
 import { AmadeusModule } from './common/amadeus/amadeus.module';
 import { RedisModule } from './common/redis/redis.module';
+import { SearchModule } from './modules/search/search.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { RedisModule } from './common/redis/redis.module';
     FlightsModule,
     AxiosModule,
     AmadeusModule,
+    SearchModule,
   ],
   controllers: [AppController],
   providers: [

@@ -8,11 +8,11 @@ export function IsIataCode(validationOptions?: ValidationOptions) {
       propertyName,
       options: validationOptions,
       validator: {
-        validate(value: any, _args: ValidationArguments) {
+        validate(value: string, _args: ValidationArguments) {
           return typeof value === 'string' && /^[A-Z]{3}$/.test(value);
         },
         defaultMessage(_args: ValidationArguments) {
-          return 'IATA code must be exactly 3 uppercase letters';
+          return `${_args.property} IATA code must be exactly 3 uppercase letters`;
         },
       },
     });

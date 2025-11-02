@@ -14,6 +14,7 @@ import { WinstonModule } from 'nest-winston';
 import winstonConfig from './config/logger.config';
 import { TransformResponseInterceptor } from './interceptors/transform-response.interceptor';
 import { LoggingInterceptor } from './interceptors/logging.interceptor';
+import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { logger: WinstonModule.createLogger(winstonConfig), });
@@ -39,6 +40,9 @@ async function bootstrap() {
       transformOptions: { enableImplicitConversion: true },
     }),
   );
+
+  // cookie parser middleware to parse cookies
+  app.use(cookieParser());
 
   // Global Response Interceptor for Success to apply consistent response format
   app.useGlobalInterceptors(new TransformResponseInterceptor()); 
