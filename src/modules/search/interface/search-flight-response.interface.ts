@@ -20,7 +20,7 @@ interface Segment {
     stops: number;
 }
 
-export interface SearchFlightItemFormat {
+export interface FlightItemFormat {
   id: string;
   oneWay: boolean;
   availableSeats: number;
@@ -33,5 +33,5 @@ export interface SearchFlightItemFormat {
 }
 
 export interface SearchFlightResponse {
-    data: SearchFlightItemFormat[];
+    data: FlightItemFormat[];
 }

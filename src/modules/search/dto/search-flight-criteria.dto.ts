@@ -3,68 +3,73 @@ import { IsBoolean, IsDate, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, Min
 import { IsIataCode } from '../../../validators/is-iataCode.validator';
 
 export class SearchFlightCriteriaDto {
-  @ApiProperty({ example: 'CAI' })
+  @ApiProperty({ example: 'CAI' , description: 'Origin airport IATA code' })
   @IsNotEmpty()
   @IsIataCode()
   origin: string;
 
-  @ApiProperty({ example: 'JED' })
+  @ApiProperty({ example: 'JED' , description: 'Destination airport IATA code' })
   @IsNotEmpty()
   @IsIataCode()
   destination: string;
 
-  @ApiProperty({ example: '2025-12-01' })
+  @ApiProperty({ example: '2025-12-01' , description: 'Departure date in YYYY-MM-DD format' })
   @IsDate()
   departureDate: Date;
 
-  @ApiPropertyOptional({ example: '2026-12-31' })
+  @ApiPropertyOptional({ example: '2026-12-31' , description: 'Return date in YYYY-MM-DD format' })
   @IsOptional()
   @IsDate()
   returnDate?: Date;
 
-  @ApiProperty({ example: 1 })
+  @ApiProperty({ example: 1 , description: 'Number of adults' })
   @IsNotEmpty()
   @IsInt()
   @Min(1)
-  adults: number;
+  adults: number = 1;
 
-  @ApiPropertyOptional({ example: 0 })
+  @ApiPropertyOptional({ example: 0 , description: 'Number of children' })
   @IsOptional()
   @IsInt()
   @Min(0)
-  children?: number;
+  children?: number = 0;
 
-  @ApiPropertyOptional({ example: 0 })
+  @ApiPropertyOptional({ example: 0 , description: 'Number of infants' })
   @IsOptional()
   @IsInt()
   @Min(0)
-  infants?: number;
+  infants?: number = 0;
 
-  @ApiPropertyOptional({ example: 'ECONOMY' })
+  @ApiPropertyOptional({ example: 'ECONOMY' , description: 'Travel class' })
   @IsOptional()
   @IsEnum(['ECONOMY', 'PREMIUM_ECONOMY', 'BUSINESS', 'FIRST'])
-  travelClass?: string;
+  travelClass?: string = 'ECONOMY';
 
-  @ApiPropertyOptional({ example: false })
+  @ApiPropertyOptional({ example: false , description: 'Non-stop flights only' })
   @IsOptional()
   @IsBoolean()
-  nonStop?: boolean;
+  nonStop?: boolean = true;
 
-  @ApiPropertyOptional({ example: '6X,7X,8X' })
+  @ApiPropertyOptional({ example: '6X,7X,8X' , description: 'Included airline codes' })
   @IsOptional()
   @IsString()
   @Min(1)
   includedAirlineCodes?: string;
 
-  @ApiPropertyOptional({ example: '6X,7X' })
+  @ApiPropertyOptional({ example: '6X,7X' , description: 'Excluded airline codes' })
   @IsOptional()
   @IsString()
   @Min(1)
   excludedAirlineCodes?: string;
 
-  @ApiPropertyOptional({ example: 100000 })
+  @ApiPropertyOptional({ example: 100000 , description: 'Maximum price' })
   @IsOptional()
   @IsInt()
   @Min(1)
   maxPrice?: number;
+
+  @ApiPropertyOptional({ example: 'USD' , description: 'Preferred currency' })
+  @IsOptional()
+  @IsString()
+  currency?: string = 'USD'
 }
