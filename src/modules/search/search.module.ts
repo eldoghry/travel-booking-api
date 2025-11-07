@@ -3,13 +3,13 @@ import { SearchController } from "./search.controller";
 import { SearchFlightService } from "./search-flight.service";
 import { GuestIdMiddleware } from "../../middleware/guest-id.middleware";
 import { HttpModule } from "@nestjs/axios";
-import { SearchBaseService } from "./search-base.service";
+import { SearchCacheService } from "./search-cache.service";
 import { SearchHotelService } from "./search-hotel.service";
 
 @Module({
     imports: [HttpModule],
     controllers: [SearchController],
-    providers: [SearchBaseService, SearchFlightService, SearchHotelService],
+    providers: [SearchCacheService, SearchFlightService, SearchHotelService],
     exports: [],
 })
 

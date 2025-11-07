@@ -1,11 +1,11 @@
 import { Injectable } from "@nestjs/common";
-import { SearchBaseService } from "./search-base.service";
-import { SearchHotelCriteriaDto, SortByOption } from "./dto/search-hotel-criteria.dto";
+import { SearchCacheService } from "./search-cache.service";
+import { SearchHotelCriteriaDto } from "./dto/search-hotel-criteria.dto";
 import { HotelItemFormat, SearchHotelResponse } from "./interface/search-hotel-response.interface";
 
 @Injectable()
 export class SearchHotelService {
-  constructor(private readonly searchBaseService: SearchBaseService) {}
+  constructor(private readonly searchCacheService: SearchCacheService) {}
 
   private formatHotelItem(data: any): HotelItemFormat {
     return {
@@ -39,16 +39,13 @@ export class SearchHotelService {
     };
   }
 
-// private sortHotelItems(items: HotelItemFormat[], sort?: SortByOption) {
-// }
 
-
-  async searchForHotels(
+  async searchHotels(
     criteria: SearchHotelCriteriaDto,
     customerId: string,
   ): Promise<SearchHotelResponse> {
     const apiUrl = `${process.env.BASE_URL}/hotels/search`;
-    const results = await this.searchBaseService.searchWithCache(
+    const results = await this.searchCacheService.searchWithCache(
       'search-hotels',
       criteria,
       customerId,
@@ -58,9 +55,6 @@ export class SearchHotelService {
     const formattedResults = results.data.providerResult.data.map((result: any) =>
       this.formatHotelItem(result),
     );
-
-    // sorting based on criteria.sort
-    // const sortedResults = this.sortHotelItems(formattedResults, criteria.sort as SortByOption);
 
     return { data: formattedResults };
   }

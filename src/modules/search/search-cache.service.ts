@@ -7,8 +7,8 @@ import { SearchFlightCriteriaDto } from './dto/search-flight-criteria.dto';
 import { SearchHotelCriteriaDto } from './dto/search-hotel-criteria.dto';
 
 @Injectable()
-export class SearchBaseService {
-  private readonly logger = new Logger(SearchBaseService.name);
+export class SearchCacheService {
+  private readonly logger = new Logger(SearchCacheService.name);
 
   constructor(
     private readonly redisService: RedisService,

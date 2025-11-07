@@ -16,7 +16,7 @@ export class SearchController {
     const userId = req.user?.id;
     const customerId = userId || guestId;
 
-    const result = await this.searchFlightService.searchForFlights(flightSearchCriteriaDTO, customerId);
+    const result = await this.searchFlightService.searchFlights(flightSearchCriteriaDTO, customerId);
     return result;
   }
 
@@ -26,7 +26,7 @@ export class SearchController {
     const userId = req.user?.id;
     const customerId = userId || guestId;
 
-    const result = await this.searchHotelService.searchForHotels(hotelSearchCriteriaDTO, customerId);
+    const result = await this.searchHotelService.searchHotels(hotelSearchCriteriaDTO, customerId);
     return result;
   }
 }

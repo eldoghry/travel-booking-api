@@ -1,11 +1,11 @@
 import { Injectable } from "@nestjs/common";
-import { SearchBaseService } from "./search-base.service";
+import { SearchCacheService } from "./search-cache.service";
 import { SearchFlightCriteriaDto } from "./dto/search-flight-criteria.dto";
 import { FlightItemFormat, SearchFlightResponse } from "./interface/search-flight-response.interface";
 
 @Injectable()
 export class SearchFlightService {
-    constructor(private readonly searchBaseService: SearchBaseService) { }
+    constructor(private readonly searchCacheService: SearchCacheService) { }
 
     private formatFlightItem(data: any): FlightItemFormat {
         const {
@@ -57,9 +57,9 @@ export class SearchFlightService {
         return item;
     }
 
-    async searchForFlights(criteria: SearchFlightCriteriaDto, customerId: string): Promise<SearchFlightResponse> {
+    async searchFlights(criteria: SearchFlightCriteriaDto, customerId: string): Promise<SearchFlightResponse> {
         const apiUrl = `${process.env.BASE_URL}/flights/search`;
-        const results = await this.searchBaseService.searchWithCache('search-flights', criteria, customerId, apiUrl);
+        const results = await this.searchCacheService.searchWithCache('search-flights', criteria, customerId, apiUrl);
         const formatedResults = results.data.providerResult.data.map((result: any) => this.formatFlightItem(result));
         return { data: formatedResults };
     }

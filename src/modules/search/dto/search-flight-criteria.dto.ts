@@ -40,10 +40,10 @@ export class SearchFlightCriteriaDto {
   @Min(0)
   infants?: number = 0;
 
-  @ApiPropertyOptional({ example: 'ECONOMY' , description: 'Travel class' })
+  @ApiPropertyOptional({ example: 'economy' , description: 'Travel class' })
   @IsOptional()
-  @IsEnum(['ECONOMY', 'PREMIUM_ECONOMY', 'BUSINESS', 'FIRST'])
-  travelClass?: string = 'ECONOMY';
+  @IsEnum(['economy', 'business', 'first'])
+  travelClass?: string = 'economy';
 
   @ApiPropertyOptional({ example: false , description: 'Non-stop flights only' })
   @IsOptional()
