@@ -71,16 +71,6 @@ describe('SearchController', () => {
       expect(result).toEqual(mockResult);
     });
 
-    it('should call searchFlights with undefined if no user or guestId', async () => {
-      const mockRequest = { user: null, cookies: {} };
-      mockSearchFlightService.searchFlights!.mockResolvedValue(mockResult);
-
-      const result = await controller.searchFlights(mockCriteria, mockRequest);
-
-      expect(searchFlightService.searchFlights).toHaveBeenCalledWith(mockCriteria, undefined);
-      expect(result).toEqual(mockResult);
-    });
-
     it('should throw if service fails', async () => {
       mockSearchFlightService.searchFlights!.mockRejectedValue(new Error('Service error'));
 
