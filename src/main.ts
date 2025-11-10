@@ -16,6 +16,8 @@ async function bootstrap() {
   const PORT = process.env.PORT || 3000;
   const logger = new Logger('Bootstrap');
 
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
   // Enable CORS
   app.enableCors({
     origin: ['http://localhost:3000', 'https://yourdomain.com'],
@@ -41,7 +43,11 @@ async function bootstrap() {
 
   // Swagger
   const documentFactory = () => SwaggerModule.createDocument(app, SWAGGER_CONFIG);
-  SwaggerModule.setup('docs', app, documentFactory);
+  SwaggerModule.setup('api/docs', app, documentFactory, {
+    swaggerOptions: {
+      persistAuthorization: true, // keeps the auth token between page reloads
+    },
+  });
 
   app.use(morgan('dev'));
 
