@@ -12,8 +12,8 @@ const mockSearchCacheService = {
 const mockCriteria: SearchFlightCriteriaDto = {
   origin: 'CAI',
   destination: 'JED',
-  departureDate: new Date('2025-12-01'),
-  returnDate: new Date('2025-12-02'),
+  departureDate: '2025-12-01',
+  returnDate: '2025-12-02',
   adults: 2,
   children: 1,
   infants: 0,
@@ -262,7 +262,7 @@ describe('SearchFlightService', () => {
       const mockCriteria: SearchFlightCriteriaDto = {
         origin: 'CAI',
         destination: 'JED',
-        departureDate: new Date('2025-11-01'),
+        departureDate: '2025-11-01',
         adults: 1,
       };
 
@@ -288,7 +288,7 @@ describe('SearchFlightService', () => {
       const mockCriteria: SearchFlightCriteriaDto = {
         origin: 'CAI',
         destination: 'JED',
-        departureDate: new Date('2025-12-01'),
+        departureDate: '2025-12-01',
         adults: 1,
       };
 

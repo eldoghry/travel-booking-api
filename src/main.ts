@@ -44,11 +44,10 @@ async function bootstrap() {
   // cookie parser middleware to parse cookies
   app.use(cookieParser());
 
-  // Global Response Interceptor for Success to apply consistent response format
-  app.useGlobalInterceptors(new TransformResponseInterceptor()); 
 
   // global interceptor
   app.useGlobalInterceptors(
+    new TransformResponseInterceptor(), // Interceptor for Success to apply consistent response format
     new LoggingInterceptor(), // logging interceptor
     new ClassSerializerInterceptor(app.get(Reflector)), // Enable ClassSerializerInterceptor globally to serialize responses
   );
