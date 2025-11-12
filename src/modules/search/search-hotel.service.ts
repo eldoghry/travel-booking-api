@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { SearchCacheService } from "./search-cache.service";
 import { SearchHotelCriteriaDto } from "./dto/search-hotel-criteria.dto";
-import { HotelItemFormat, SearchHotelResponse } from "./interface/search-hotel-response.interface";
+import { HotelItemFormat, SearchHotelResponse } from "./interfaces/search-hotel-response.interface";
 
 @Injectable()
 export class SearchHotelService {

@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { SearchCacheService } from "./search-cache.service";
 import { SearchFlightCriteriaDto } from "./dto/search-flight-criteria.dto";
-import { FlightItemFormat, SearchFlightResponse } from "./interface/search-flight-response.interface";
+import { FlightItemFormat, SearchFlightResponse } from "./interfaces/search-flight-response.interface";
 
 @Injectable()
 export class SearchFlightService {
