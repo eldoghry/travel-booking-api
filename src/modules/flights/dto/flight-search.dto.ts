@@ -1,6 +1,8 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsDate, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
 import { IsIataCode } from '../../../validators/is-iataCode.validator';
+import { FlightSummary } from '../interfaces/fligth-summary.interface';
+import { FlightSearchSummary } from '../interfaces/flight-search-summary.interface';
 
 export class FlightSearchDto {
   @ApiProperty({ example: 'CAI' })
@@ -47,11 +49,8 @@ export class FlightSearchDto {
 
 export class FlightSearchResponseDto {
   @ApiProperty()
-  searchId: string;
+  summary: FlightSearchSummary[];
 
   @ApiProperty()
-  provider: string;
-
-  @ApiProperty()
-  providerResult: any;
+  providerResult: Record<string, any[]>;
 }

@@ -145,9 +145,9 @@ export class PassengerDto {
 }
 
 export class FlightBookingDto extends FlightDetailsDto {
-  @ApiProperty()
-  @IsString()
-  offerPriceId: string;
+  // @ApiProperty()
+  // @IsString()
+  // offerPriceId: string;
 
   @ApiProperty({ type: [PassengerDto] })
   @IsArray()
@@ -158,7 +158,7 @@ export class FlightBookingDto extends FlightDetailsDto {
 
 export class FlightBookingResponseDto {
   @ApiProperty()
-  flightBookingSummary: FlightBookingSummary;
+  summary: FlightBookingSummary;
 
   @ApiProperty()
   providerResult: any;

@@ -7,6 +7,7 @@ import { AmadeusEndpoints } from 'src/common/amadeus/amadeus-request';
 import { formatDateToYMD } from 'src/common/utils/helper';
 import { FlightSummary } from '../interfaces/fligth-summary.interface';
 import { FlightBookingSummary } from '../interfaces/flight-booking-summary.interface';
+import { FlightSearchSummary } from '../interfaces/flight-search-summary.interface';
 
 @Injectable()
 export class AmadeusFlightProvider implements FlightProvider {
@@ -44,15 +45,16 @@ export class AmadeusFlightProvider implements FlightProvider {
   }
 
   async bookFlight(flightPriceOffer: any): Promise<any> {
-    const { travelers, ...flightOffers } = flightPriceOffer;
-    const data = await this.axios.post(AmadeusEndpoints.FLIGHT_BOOKING, {
+    const { travelers, ...other } = flightPriceOffer;
+    const payload = {
       data: {
         type: 'flight-order',
-        flightOffers: [flightOffers],
+        flightOffers: [...other.flightOffers],
         travelers: flightPriceOffer.travelers,
       },
-    });
+    };
 
+    const data = await this.axios.post(AmadeusEndpoints.FLIGHT_BOOKING, { ...payload });
     return data;
   }
 
@@ -153,6 +155,32 @@ export class AmadeusFlightProvider implements FlightProvider {
       documents,
       ticketingStatus: data.ticketingAgreement?.option || 'UNKNOWN',
       creationDate,
+    };
+  }
+
+  getFlightSearchSummary(flightOffer: any): FlightSearchSummary {
+    const trips = flightOffer.itineraries.map((it) => ({
+      from: it.segments[0].departure.iataCode,
+      to: it.segments[it.segments.length - 1].arrival.iataCode,
+      departureTime: it.segments[0].departure.at,
+      arrivalTime: it.segments[it.segments.length - 1].arrival.at,
+      duration: it.duration,
+      stops: it.segments.length - 1,
+    }));
+
+    return {
+      provider: 'amadeus',
+      id: flightOffer.id,
+      price: {
+        currency: flightOffer.price.currency,
+        total: parseFloat(flightOffer.price.total),
+      },
+      numberOfBookableSeats: flightOffer.numberOfBookableSeats,
+      isRoundTrip: flightOffer.itineraries.length > 1,
+      trips,
+      airlines: flightOffer.validatingAirlineCodes,
+      lastTicketingDate: flightOffer.lastTicketingDate,
+      cabin: flightOffer.travelerPricings?.[0]?.fareDetailsBySegment?.[0]?.cabin || null,
     };
   }
 }
