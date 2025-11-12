@@ -9,6 +9,7 @@ services:
     depends_on:
       - redis-srv
       - postgres-srv
+      - rabbitmq-srv
     networks:
       - app_network
   redis-srv:
@@ -66,7 +67,7 @@ services:
       - app_network
   rabbitmq-srv:
     image: rabbitmq:3-management
-    container_name: rabbitmq-local
+    container_name: rabbitmq-local1
     hostname: rabbit-local
     ports:
       - "5672:5672"
