@@ -22,10 +22,13 @@ import { AxiosModule } from './common/axios/axios.module';
 import { AmadeusModule } from './common/amadeus/amadeus.module';
 import { RedisModule } from './common/redis/redis.module';
 import { CoreModule } from './modules/core/core.module';
+import { NotificationModule } from './modules/notification/notification.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
     CoreModule,
+    EventEmitterModule.forRoot(),
     // ConfigModule.forRoot(ENV_CONFIG),
     ThrottlerModule.forRoot(THROTTLE_CONFIG),
     // TypeOrmModule.forRootAsync(TYPEORM_CONFIG),
