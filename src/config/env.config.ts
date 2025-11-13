@@ -20,6 +20,9 @@ const envValidationSchema = Joi.object({
   REDIS_HOST: Joi.string().required(),
   REDIS_PORT: Joi.number().default(6379),
 
+  // RABBITMQ
+  RABBIT_MQ_URI: Joi.string().uri().required(),
+
   // KEYCLOAK
   KEYCLOAK_AUTH_URL: Joi.string().required(),
   KEYCLOAK_REALM: Joi.string().required(),

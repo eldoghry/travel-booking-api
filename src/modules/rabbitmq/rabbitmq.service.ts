@@ -1,3 +1,4 @@
+import { ConfigService } from '@nestjs/config';
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import {
   AmqpConnectionManager,
@@ -13,10 +14,13 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
   private channel: ChannelWrapper;
   private readonly queueNames = ['notification_tasks'];
 
+  constructor(private readonly configService: ConfigService) {}
+
   async onModuleInit() {
-    this.connection = amqpConnect(['amqp://localhost']);
+    const RABBIT_MQ_URI = this.configService.get<string>('RABBIT_MQ_URI') as string;
+    this.connection = amqpConnect([RABBIT_MQ_URI]);
     this.channel = this.connection.createChannel({
-      json: true,
+      // json: true,
       setup: async (channel: Channel) => {
         this.queueNames.forEach(async (queue) => {
           await channel.assertQueue(queue, { durable: true });
@@ -26,6 +30,9 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
 
     this.connection.on('connect', () => console.log('Connected to RabbitMQ'));
     this.connection.on('disconnect', (err) => console.error('Disconnected from RabbitMQ', err));
+    this.connection.on('connectFailed', (err) =>
+      console.error('Connect Failed from RabbitMQ', err),
+    );
   }
 
   async onModuleDestroy() {
