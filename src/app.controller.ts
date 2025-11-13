@@ -1,3 +1,4 @@
+import { RabbitMQService } from './modules/rabbitmq/rabbitmq.service';
 import {
   BadRequestException,
   Controller,
@@ -12,11 +13,18 @@ import { KeycloakAuthSyncInterceptor } from './modules/auth/interceptors/keycloa
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  constructor(
+    private readonly appService: AppService,
+    private readonly rabbitMQService: RabbitMQService,
+  ) {}
 
   @Get('public')
   @Unprotected()
-  getHello(): string {
+  async getHello() {
+    for (let index = 0; index < 100; index++) {
+      const payload = { id: index + 1, email: `user-${index + 1}@gmail.com` };
+      await this.rabbitMQService.sendToQueue('notification_tasks', payload);
+    }
     return this.appService.getHello();
   }
 
