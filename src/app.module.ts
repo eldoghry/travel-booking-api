@@ -40,6 +40,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     FlightsModule,
     AxiosModule,
     AmadeusModule,
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [

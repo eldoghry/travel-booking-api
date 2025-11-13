@@ -1,3 +1,4 @@
+import { NotificationEvent } from './modules/notification/enum/notification-event.enum';
 import { RabbitMQService } from './modules/rabbitmq/rabbitmq.service';
 import {
   BadRequestException,
@@ -10,21 +11,18 @@ import { AppService } from './app.service';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { AuthenticatedUser, Roles, Unprotected } from 'nest-keycloak-connect';
 import { KeycloakAuthSyncInterceptor } from './modules/auth/interceptors/keycloak-auth.interceptor';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Controller()
 export class AppController {
   constructor(
     private readonly appService: AppService,
-    private readonly rabbitMQService: RabbitMQService,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   @Get('public')
   @Unprotected()
   async getHello() {
-    for (let index = 0; index < 100; index++) {
-      const payload = { id: index + 1, email: `user-${index + 1}@gmail.com` };
-      await this.rabbitMQService.sendToQueue('notification_tasks', payload);
-    }
     return this.appService.getHello();
   }
 
@@ -52,5 +50,39 @@ export class AppController {
       message: 'User Profile',
       user,
     };
+  }
+
+  @Get('notifications')
+  @Unprotected()
+  mockSendingNotifications() {
+    for (let index = 0; index < 10; index++) {
+      // sending user.registered
+      const x = this.eventEmitter.emit(NotificationEvent.USER_REGISTERED, {
+        email: `user${index}@example.com`,
+        name: `User ${index}`,
+      });
+
+      console.log(`📨 Emitted USER_REGISTERED event: [${index}]`, x);
+
+      // sending forget.password
+      const y = this.eventEmitter.emit(NotificationEvent.FORGET_PASSWORD, {
+        email: `user${index}@example.com`,
+        name: `User ${index}`,
+        resetToken: `reset-token-${index}`,
+      });
+
+      console.log(`📨 Emitted FORGET_PASSWORD event: [${index}]`, y);
+
+      // sending payment.success
+      const z = this.eventEmitter.emit(NotificationEvent.PAYMENT_SUCCESS, {
+        paymentId: `payment-${index}`,
+        amount: 100 + index,
+        name: `User ${index}`,
+        email: `user${index}@example.com`,
+        phone: `+1234567890${index}`,
+      });
+
+      console.log(`📨 Emitted PAYMENT_SUCCESS event: [${index}]`, z);
+    }
   }
 }
