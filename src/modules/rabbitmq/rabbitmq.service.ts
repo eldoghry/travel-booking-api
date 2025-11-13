@@ -7,12 +7,13 @@ import {
   connect as amqpConnect,
 } from 'amqp-connection-manager';
 import { ConsumeMessage } from 'amqplib';
+import { RabbitMQQueue } from './rabbitmq.enum';
 
 @Injectable()
 export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
   private connection: AmqpConnectionManager;
   private channel: ChannelWrapper;
-  private readonly queueNames = ['notification_tasks'];
+  private readonly queueNames = Object.values(RabbitMQQueue) as string[];
 
   constructor(private readonly configService: ConfigService) {}
 
