@@ -18,6 +18,7 @@ import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AuthModule } from './modules/auth/auth.module';
 import { KeycloakAuthSyncInterceptor } from './modules/auth/interceptors/keycloak-auth.interceptor';
 import { FlightsModule } from './modules/flights/flights.module';
+import { HotelsModule } from './modules/hotels/hotels.module';
 import { AxiosModule } from './common/axios/axios.module';
 import { AmadeusModule } from './common/amadeus/amadeus.module';
 import { RedisModule } from './common/redis/redis.module';
@@ -33,6 +34,7 @@ import { RedisModule } from './common/redis/redis.module';
     UsersModule,
     AuthModule,
     FlightsModule,
+    HotelsModule,
     AxiosModule,
     AmadeusModule,
   ],
