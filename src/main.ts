@@ -20,16 +20,18 @@ import { DataSource } from 'typeorm';
 import { addTransactionalDataSource } from 'typeorm-transactional';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { logger: WinstonModule.createLogger(winstonConfig), });
+  const app = await NestFactory.create(AppModule, {
+    logger: WinstonModule.createLogger(winstonConfig),
+    rawBody: true,
+  });
   const PORT = process.env.PORT || 3000;
   const logger = new Logger('Bootstrap');
 
   // Initialize transactional context
-  initializeTransactionalContext(); 
+  initializeTransactionalContext();
 
   const dataSource = app.get(DataSource);
   addTransactionalDataSource(dataSource);
-
 
   // Enable CORS
   app.enableCors({
@@ -53,7 +55,6 @@ async function bootstrap() {
 
   // cookie parser middleware to parse cookies
   app.use(cookieParser());
-
 
   // global interceptor
   app.useGlobalInterceptors(
