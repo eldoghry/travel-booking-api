@@ -22,7 +22,8 @@ import { AxiosModule } from './common/axios/axios.module';
 import { AmadeusModule } from './common/amadeus/amadeus.module';
 import { RedisModule } from './common/redis/redis.module';
 import { SearchModule } from './modules/search/search.module';
-
+import { PaymentModule } from './modules/payment/payment.module';
+import { TransactionModule } from './modules/transaction/transaction.module';
 @Module({
   imports: [
     ConfigModule.forRoot(ENV_CONFIG),
@@ -37,6 +38,8 @@ import { SearchModule } from './modules/search/search.module';
     AxiosModule,
     AmadeusModule,
     SearchModule,
+    TransactionModule,
+    PaymentModule,
   ],
   controllers: [AppController],
   providers: [

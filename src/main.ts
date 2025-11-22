@@ -15,11 +15,21 @@ import winstonConfig from './config/logger.config';
 import { TransformResponseInterceptor } from './interceptors/transform-response.interceptor';
 import { LoggingInterceptor } from './interceptors/logging.interceptor';
 import cookieParser from 'cookie-parser';
+import { initializeTransactionalContext } from 'typeorm-transactional';
+import { DataSource } from 'typeorm';
+import { addTransactionalDataSource } from 'typeorm-transactional';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { logger: WinstonModule.createLogger(winstonConfig), });
   const PORT = process.env.PORT || 3000;
   const logger = new Logger('Bootstrap');
+
+  // Initialize transactional context
+  initializeTransactionalContext(); 
+
+  const dataSource = app.get(DataSource);
+  addTransactionalDataSource(dataSource);
+
 
   // Enable CORS
   app.enableCors({
