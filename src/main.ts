@@ -1,8 +1,8 @@
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import helmet from 'helmet';
 import compression from 'compression';
-import { ValidationPipe, VersioningType } from '@nestjs/common';
+import { ClassSerializerInterceptor, ValidationPipe, VersioningType } from '@nestjs/common';
 import { SwaggerModule } from '@nestjs/swagger';
 import { SWAGGER_CONFIG } from './config';
 import morgan from 'morgan';
@@ -10,9 +10,13 @@ import { Logger } from '@nestjs/common';
 import { HttpExceptionFilter } from './filters/http-exception.filter';
 import { QueryExceptionFilter } from './filters/query-exception.filter';
 import { AllExceptionsFilter } from './filters/all-exception.filter';
+import { WinstonModule } from 'nest-winston';
+import winstonConfig from './config/logger.config';
+import { TransformResponseInterceptor } from './interceptors/transform-response.interceptor';
+import { LoggingInterceptor } from './interceptors/logging.interceptor';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { logger: WinstonModule.createLogger(winstonConfig), });
   const PORT = process.env.PORT || 3000;
   const logger = new Logger('Bootstrap');
 
@@ -34,6 +38,15 @@ async function bootstrap() {
       transform: true,
       transformOptions: { enableImplicitConversion: true },
     }),
+  );
+
+  // Global Response Interceptor for Success to apply consistent response format
+  app.useGlobalInterceptors(new TransformResponseInterceptor()); 
+
+  // global interceptor
+  app.useGlobalInterceptors(
+    new LoggingInterceptor(), // logging interceptor
+    new ClassSerializerInterceptor(app.get(Reflector)), // Enable ClassSerializerInterceptor globally to serialize responses
   );
 
   app.setGlobalPrefix('api');
