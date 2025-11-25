@@ -15,8 +15,8 @@ export class Transaction {
     @PrimaryGeneratedColumn()
     transactionId!: number;
 
-    @Column({ nullable: false })
-    customerId!: number;
+    @Column({ nullable: true })
+    customerId?: number;
 
     @Column({ nullable: false, enum: BookingType })
     bookingType!: BookingType;
@@ -53,16 +53,16 @@ export class Transaction {
 
     /* Relations */
     @OneToMany(() => TransactionDetail, (detail) => detail.transaction)
-	details!: TransactionDetail[];
+    details!: TransactionDetail[];
 
-	// @ManyToOne(() => Customer)
-	// @JoinColumn({ name: 'customer_id' })
-	// customer!: Customer;
+    // @ManyToOne(() => Customer)
+    // @JoinColumn({ name: 'customer_id' })
+    // customer!: Customer;
 
-	@ManyToOne(() => PaymentMethod, (paymentMethod) => paymentMethod.transactions)
-	@JoinColumn({ name: 'payment_method_id' })
-	paymentMethod!: PaymentMethod;
+    @ManyToOne(() => PaymentMethod, (paymentMethod) => paymentMethod.transactions)
+    @JoinColumn({ name: 'payment_method_id' })
+    paymentMethod!: PaymentMethod;
 
-	@OneToMany(() => TransactionStatusLog, (transactionStatusLog) => transactionStatusLog.transaction)
-	transactionStatusLogs!: TransactionStatusLog[];
+    @OneToMany(() => TransactionStatusLog, (transactionStatusLog) => transactionStatusLog.transaction)
+    transactionStatusLogs!: TransactionStatusLog[];
 }

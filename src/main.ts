@@ -18,6 +18,7 @@ import cookieParser from 'cookie-parser';
 import { initializeTransactionalContext } from 'typeorm-transactional';
 import { DataSource } from 'typeorm';
 import { addTransactionalDataSource } from 'typeorm-transactional';
+import { json, urlencoded } from 'body-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { logger: WinstonModule.createLogger(winstonConfig), });
@@ -38,6 +39,9 @@ async function bootstrap() {
     credentials: true,
   });
 
+  app.use(json({ limit: '10mb' }));
+  app.use(urlencoded({ extended: true, limit: '10mb' }));
+  
   // Helmet for secure HTTP headers
   app.use(helmet());
 
