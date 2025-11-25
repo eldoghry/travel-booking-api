@@ -1,4 +1,5 @@
 import { FlightBookingSummary } from './flight-booking-summary.interface';
+import { FlightSearchSummary } from './flight-search-summary.interface';
 import { FlightSummary } from './fligth-summary.interface';
 
 export interface FlightProvider {
@@ -11,4 +12,5 @@ export interface FlightProvider {
   // extract summary from provider response for simplicity
   getFlightPriceSummary(response: any): FlightSummary;
   getFlightBookingSummary(response: any): FlightBookingSummary;
+  getFlightSearchSummary(response: any): FlightSearchSummary;
 }
