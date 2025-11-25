@@ -1,35 +1,29 @@
-interface Segment {
+interface Trip {
     departure: {
       iataCode: string;
       time: string;
-      terminal?: string | null;
     };
     arrival: {
       iataCode: string;
       time: string;
-      terminal?: string | null;
     };
-    airline: {
-      code: string;
-      operatingCode?: string;
-      name?: string;
-    };
+    airlineCode: string;
     flightNumber: string;
-    aircraft: string;
     duration: string;
     stops: number;
 }
 
 export interface FlightItemFormat {
+  provider: string;
   id: string;
-  oneWay: boolean;
+  isRoundTrip: boolean;
   availableSeats: number;
   price: {
     currency: string;
     base: string;
     total: string;
   };
-  segments: Segment[];
+  trips: Trip[];
 }
 
 export interface SearchFlightResponse {
