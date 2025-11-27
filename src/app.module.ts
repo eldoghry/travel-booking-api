@@ -24,6 +24,7 @@ import { RedisModule } from './common/redis/redis.module';
 import { CoreModule } from './modules/core/core.module';
 import { NotificationModule } from './modules/notification/notification.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { WorkerPoolModule } from './modules/worker-pool/worker-pool.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     AxiosModule,
     AmadeusModule,
     NotificationModule,
+    WorkerPoolModule,
   ],
   controllers: [AppController],
   providers: [
