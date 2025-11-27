@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { SearchFlightService } from '../search-flight.service';
 import { SearchCacheService } from '../search-cache.service';
 import { SearchFlightCriteriaDto } from '../dto/search-flight-criteria.dto';
-import { FlightItemFormat } from '../interfaces/search-flight-response.interface';
+import { FlightItemFormat } from '../interfaces/search-flight.interface';
 
 // Mock SearchCacheService
 const mockSearchCacheService = {

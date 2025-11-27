@@ -9,7 +9,7 @@ import {
   Param,
   ParseArrayPipe,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { HotelsService } from './hotels.service';
 import {
   HotelsByHotelsDto,
@@ -20,9 +20,10 @@ import {
 import { HotelOffersSearchDto, HotelOffersListResponseDto } from './dto/hotel-offers.dto';
 import { HotelOfferDetailsDto, HotelOfferDetailsResponseDto } from './dto/hotel-offer-details.dto';
 import { HotelOrderBookingDto, HotelOrderBookingResponseDto } from './dto/hotel-order-book.dto';
+import { Public } from 'nest-keycloak-connect';
 
+@Public()
 @ApiTags('Hotels')
-@ApiBearerAuth('JWT')
 @Controller('hotels')
 export class HotelsController {
   constructor(private readonly hotelsService: HotelsService) {}

@@ -44,7 +44,17 @@ export class AmadeusHotelProvider implements HotelProvider {
       params.checkInDate = formatDateToYMD(params.checkInDate);
     if (params.checkOutDate instanceof Date)
       params.checkOutDate = formatDateToYMD(params.checkOutDate);
-    return this.axios.get(AmadeusEndpoints.HOTEL_OFFERS_LIST, { params });
+    try {
+      const response = await this.axios.get(AmadeusEndpoints.HOTEL_OFFERS_LIST, { params });
+      return response;
+    } catch (error) {
+      const amadeusError = error?.response?.data?.errors?.[0];
+
+      if (amadeusError?.title === 'NO ROOMS AVAILABLE AT REQUESTED PROPERTY' || amadeusError?.title === 'INVALID PROPERTY CODE') {
+        return null
+      }
+      throw error;
+    }
   }
 
   async getHotelOfferDetails(offerId: string): Promise<any> {
@@ -115,7 +125,7 @@ export class AmadeusHotelProvider implements HotelProvider {
     const items = response?.data || [];
     const hotels = items.map((item: any) => {
       const hotel = item.hotel || {};
-      const offers = (item.offers || []).map((o: any) => ({
+      const offers = (item?.offers || []).map((o: any) => ({
         offerId: o.id,
         checkInDate: o.checkInDate,
         checkOutDate: o.checkOutDate,
@@ -235,12 +245,12 @@ export class AmadeusHotelProvider implements HotelProvider {
       },
       guest: guest
         ? {
-            title: guest?.title,
-            firstName: guest?.firstName,
-            lastName: guest?.lastName,
-            phone: guest?.phone,
-            email: guest?.email,
-          }
+          title: guest?.title,
+          firstName: guest?.firstName,
+          lastName: guest?.lastName,
+          phone: guest?.phone,
+          email: guest?.email,
+        }
         : undefined,
     };
     return { booking };

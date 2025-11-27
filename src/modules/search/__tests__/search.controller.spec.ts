@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { SearchController } from '../search.controller';
 import { SearchFlightService } from '../search-flight.service';
 import { SearchFlightCriteriaDto } from '../dto/search-flight-criteria.dto';
-import { SearchFlightResponse } from '../interfaces/search-flight-response.interface';
+import { SearchFlightResponse } from '../interfaces/search-flight.interface';
 import { SearchHotelService } from '../search-hotel.service';
 
 const mockSearchFlightService: Partial<Record<keyof SearchFlightService, jest.Mock>> = {
