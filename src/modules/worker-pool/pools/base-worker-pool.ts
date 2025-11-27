@@ -166,9 +166,9 @@ export class BaseWorkerPool {
   public getStatus() {
     if (isDebugMode()) {
       console.log(
-        `🗒️  [${this.type}] Worker[Total|Idle|Busy]:[${this.workers.length}|${this.idleWorkers.length}|${this.busyWorkers.size}], Queued: ${this.taskQueue.length}`,
+        `🗒️  [${this.type} Worker] __ [Total|Idle|Busy]:[${this.workers.length}|${this.idleWorkers.length}|${this.busyWorkers.size}] __ [MIN|MAX]:[${this.minWorkers}|${this.maxWorkers}] __ Queued: ${this.taskQueue.length}`,
       );
-      console.log('-'.repeat(60));
+      console.log('-'.repeat(80));
     }
 
     return {
