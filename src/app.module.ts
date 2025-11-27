@@ -22,14 +22,20 @@ import { HotelsModule } from './modules/hotels/hotels.module';
 import { AxiosModule } from './common/axios/axios.module';
 import { AmadeusModule } from './common/amadeus/amadeus.module';
 import { RedisModule } from './common/redis/redis.module';
+import { CoreModule } from './modules/core/core.module';
+import { NotificationModule } from './modules/notification/notification.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { WorkerPoolModule } from './modules/worker-pool/worker-pool.module';
 import { SearchModule } from './modules/search/search.module';
 import { PaymentModule } from './modules/payment/payment.module';
 import { TransactionModule } from './modules/transaction/transaction.module';
 @Module({
   imports: [
-    ConfigModule.forRoot(ENV_CONFIG),
+    CoreModule,
+    EventEmitterModule.forRoot(),
+    // ConfigModule.forRoot(ENV_CONFIG),
     ThrottlerModule.forRoot(THROTTLE_CONFIG),
-    TypeOrmModule.forRootAsync(TYPEORM_CONFIG),
+    // TypeOrmModule.forRootAsync(TYPEORM_CONFIG),
     RedisModule,
     CacheModule.registerAsync(CACHE_CONFIG),
     KeycloakConnectModule.registerAsync(KEYCLOAK_OPTIONS),
@@ -39,6 +45,8 @@ import { TransactionModule } from './modules/transaction/transaction.module';
     HotelsModule,
     AxiosModule,
     AmadeusModule,
+    NotificationModule,
+    WorkerPoolModule,
     SearchModule,
     TransactionModule,
     PaymentModule,

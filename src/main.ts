@@ -10,6 +10,7 @@ import { Logger } from '@nestjs/common';
 import { HttpExceptionFilter } from './filters/http-exception.filter';
 import { QueryExceptionFilter } from './filters/query-exception.filter';
 import { AllExceptionsFilter } from './filters/all-exception.filter';
+import { isDebugMode } from './common/utils/helper';
 import { WinstonModule } from 'nest-winston';
 import winstonConfig from './config/logger.config';
 import { TransformResponseInterceptor } from './interceptors/transform-response.interceptor';
@@ -21,16 +22,18 @@ import { addTransactionalDataSource } from 'typeorm-transactional';
 import { json, urlencoded } from 'body-parser';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { logger: WinstonModule.createLogger(winstonConfig), });
+  const app = await NestFactory.create(AppModule, {
+    logger: WinstonModule.createLogger(winstonConfig),
+  });
   const PORT = process.env.PORT || 3000;
   const logger = new Logger('Bootstrap');
 
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
   // Initialize transactional context
-  initializeTransactionalContext(); 
+  initializeTransactionalContext();
 
   const dataSource = app.get(DataSource);
   addTransactionalDataSource(dataSource);
-
 
   // Enable CORS
   app.enableCors({
@@ -41,7 +44,7 @@ async function bootstrap() {
 
   app.use(json({ limit: '10mb' }));
   app.use(urlencoded({ extended: true, limit: '10mb' }));
-  
+
   // Helmet for secure HTTP headers
   app.use(helmet());
 
@@ -58,7 +61,6 @@ async function bootstrap() {
   // cookie parser middleware to parse cookies
   app.use(cookieParser());
 
-
   // global interceptor
   app.useGlobalInterceptors(
     new TransformResponseInterceptor(), // Interceptor for Success to apply consistent response format
@@ -71,7 +73,11 @@ async function bootstrap() {
 
   // Swagger
   const documentFactory = () => SwaggerModule.createDocument(app, SWAGGER_CONFIG);
-  SwaggerModule.setup('docs', app, documentFactory);
+  SwaggerModule.setup('api/docs', app, documentFactory, {
+    swaggerOptions: {
+      persistAuthorization: true, // keeps the auth token between page reloads
+    },
+  });
 
   app.use(morgan('dev'));
 
@@ -86,6 +92,7 @@ async function bootstrap() {
     logger.log(`Server is running on http://localhost:${PORT}/api/v1`);
     logger.log(`Swagger: http://localhost:${PORT}/api/docs`);
     logger.log(`Node Environment: [${process.env?.NODE_ENV}]`);
+    logger.log(`Debug Mode:[${isDebugMode()}]`);
   });
 }
 bootstrap();
