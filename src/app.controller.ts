@@ -55,24 +55,22 @@ export class AppController {
   @Get('notifications')
   @Unprotected()
   mockSendingNotifications() {
-    for (let index = 0; index < 10; index++) {
-      // sending user.registered
-      const x = this.eventEmitter.emit(NotificationEvent.USER_REGISTERED, {
-        email: `user${index}@example.com`,
-        name: `User ${index}`,
-      });
-
-      console.log(`📨 Emitted USER_REGISTERED event: [${index}]`, x);
-
+    for (let index = 0; index < 3; index++) {
+      // sending user.registered email
+      // const x = this.eventEmitter.emit(NotificationEvent.USER_REGISTERED, {
+      //   email: `user${index}@example.com`,
+      //   name: `User ${index}`,
+      // });
+      // console.log(`📨 Emitted USER_REGISTERED event: [${index}]`, x);
+      // ###############################################
       // sending forget.password
-      const y = this.eventEmitter.emit(NotificationEvent.FORGET_PASSWORD, {
-        email: `user${index}@example.com`,
-        name: `User ${index}`,
-        resetToken: `reset-token-${index}`,
-      });
-
-      console.log(`📨 Emitted FORGET_PASSWORD event: [${index}]`, y);
-
+      // const y = this.eventEmitter.emit(NotificationEvent.FORGET_PASSWORD, {
+      //   email: `user${index}@example.com`,
+      //   name: `User ${index}`,
+      //   resetToken: `reset-token-${index}`,
+      // });
+      // console.log(`📨 Emitted FORGET_PASSWORD event: [${index}]`, y);
+      // ###############################################
       // sending payment.success
       const z = this.eventEmitter.emit(NotificationEvent.PAYMENT_SUCCESS, {
         paymentId: `payment-${index}`,
@@ -81,7 +79,6 @@ export class AppController {
         email: `user${index}@example.com`,
         phone: `+1234567890${index}`,
       });
-
       console.log(`📨 Emitted PAYMENT_SUCCESS event: [${index}]`, z);
     }
   }
