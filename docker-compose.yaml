@@ -46,7 +46,10 @@ services:
     container_name: keycloak
     command:
       - start-dev
+      - --http-enabled=true
       - --hostname-strict=false
+      - --proxy-headers=xforwarded
+      - --http-relative-path=/
       # - --hostname-url=http://localhost:8080
       # - --hostname=localhost
     environment:
