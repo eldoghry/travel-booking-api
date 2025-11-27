@@ -10,6 +10,7 @@ services:
       - redis-srv
       - postgres-srv
       - rabbitmq-srv
+      - elasticsearch
     networks:
       - app_network
   redis-srv:
@@ -78,9 +79,60 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: user
       RABBITMQ_DEFAULT_PASS: password
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.8.2
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=false # disable security authentication
+      # - ELASTIC_PASSWORD=WkgWDzI8pJsoLYb0JbH2      # Set password
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    networks:
+      - app_network
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.8.2 # should be same as elasticsearch version
+    container_name: kibana
+    environment:
+      ELASTICSEARCH_HOSTS: "http://elasticsearch:9200"
+      # ELASTICSEARCH_USERNAME: elastic
+      # ELASTICSEARCH_PASSWORD: WkgWDzI8pJsoLYb0JbH2
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    networks:
+      - app_network
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:8.8.2 # should be same as elasticsearch version
+    container_name: filebeat
+    user: root
+    restart: unless-stopped
+    volumes:
+      - ./filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - ./logs:/var/log/app:ro
+      - filebeat-data:/usr/share/filebeat/data
+    command: filebeat -e -strict.perms=false
+    depends_on:
+      - elasticsearch
+    networks:
+      - app_network
+
 volumes:
   postgres-db:
   rabbitmq_data:
+  esdata:
+  filebeat-data:
 
 networks:
   app_network:
