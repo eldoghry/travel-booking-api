@@ -14,6 +14,7 @@ import { WinstonModule } from 'nest-winston';
 import winstonConfig from './config/logger.config';
 import { TransformResponseInterceptor } from './interceptors/transform-response.interceptor';
 import { LoggingInterceptor } from './interceptors/logging.interceptor';
+import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { logger: WinstonModule.createLogger(winstonConfig), });
@@ -40,11 +41,13 @@ async function bootstrap() {
     }),
   );
 
-  // Global Response Interceptor for Success to apply consistent response format
-  app.useGlobalInterceptors(new TransformResponseInterceptor()); 
+  // cookie parser middleware to parse cookies
+  app.use(cookieParser());
+
 
   // global interceptor
   app.useGlobalInterceptors(
+    new TransformResponseInterceptor(), // Interceptor for Success to apply consistent response format
     new LoggingInterceptor(), // logging interceptor
     new ClassSerializerInterceptor(app.get(Reflector)), // Enable ClassSerializerInterceptor globally to serialize responses
   );
@@ -53,8 +56,7 @@ async function bootstrap() {
   app.enableVersioning({ type: VersioningType.URI, defaultVersion: '1' });
 
   // Swagger
-  const documentFactory = () =>
-    SwaggerModule.createDocument(app, SWAGGER_CONFIG);
+  const documentFactory = () => SwaggerModule.createDocument(app, SWAGGER_CONFIG);
   SwaggerModule.setup('docs', app, documentFactory);
 
   app.use(morgan('dev'));

@@ -1,0 +1,134 @@
+process.env.NODE_ENV = 'test';
+process.env.TESTCONTAINERS_RYUK_DISABLED = 'true';
+
+import * as dotenv from 'dotenv';
+import * as path from 'path';
+dotenv.config({ path: path.resolve(__dirname, '../env/test.env') });
+
+import { ValidationPipe, VersioningType } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
+import { RedisContainer, StartedRedisContainer } from '@testcontainers/redis';
+import { PostgreSqlContainer, StartedPostgreSqlContainer } from '@testcontainers/postgresql';
+import { AppModule } from '../src/app.module';
+import { TransformResponseInterceptor } from '../src/interceptors/transform-response.interceptor';
+import { HttpExceptionFilter } from '../src/filters/http-exception.filter';
+import { RedisService } from '../src/common/redis/redis.service';
+import { INestApplication } from '@nestjs/common';
+import cookieParser from 'cookie-parser';
+
+export interface TestAppContext {
+  app: INestApplication;
+  redisContainer: StartedRedisContainer;
+  postgresContainer?: StartedPostgreSqlContainer;
+  redisService: RedisService;
+}
+
+export interface SetupOptions {
+  withDatabase?: boolean;
+}
+
+/**
+ * Creates a NestJS test application with Redis (and optionally Postgres).
+ */
+export async function setupTestApp(options: SetupOptions = {}): Promise<TestAppContext> {
+  const { withDatabase = false } = options;
+
+  console.log('🚀 Starting Redis container...');
+
+  const redisContainer = await new RedisContainer('redis:7-alpine')
+    .withExposedPorts(6379)
+    .withStartupTimeout(120000)
+    .start()
+
+  console.log(`✅ Redis started at ${redisContainer.getHost()}:${redisContainer.getPort()}`);
+
+  // Override Redis env vars
+  process.env.REDIS_HOST = redisContainer.getHost();
+  process.env.REDIS_PORT = redisContainer.getPort().toString();
+
+  let postgresContainer: StartedPostgreSqlContainer | undefined;
+
+  if (withDatabase) {
+    console.log('🚀 Starting Postgres container...');
+
+    postgresContainer = await new PostgreSqlContainer('postgres:15-alpine')
+      .withDatabase('travel_booking')
+      .withUsername('postgres')
+      .withPassword('postgres')
+      .withExposedPorts(5432)
+      .withStartupTimeout(120000)
+      .start();
+
+    console.log(`✅ Postgres started at ${postgresContainer.getHost()}:${postgresContainer.getPort()}`);
+
+    // Override Postgres env vars
+    process.env.DB_HOST = postgresContainer.getHost();
+    process.env.DB_PORT = postgresContainer.getPort().toString();
+  }
+
+  console.log('🔧 Creating NestJS test module...');
+
+  const moduleBuilder = Test.createTestingModule({
+    imports: [AppModule],
+  });
+
+  const moduleFixture: TestingModule = await moduleBuilder.compile();
+
+  const app = moduleFixture.createNestApplication();
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+      transformOptions: { enableImplicitConversion: true },
+    }),
+  );
+
+  app.useGlobalInterceptors(new TransformResponseInterceptor());
+  app.useGlobalFilters(new HttpExceptionFilter());
+  app.setGlobalPrefix('api');
+  app.enableVersioning({ type: VersioningType.URI, defaultVersion: '1' });
+  app.use(cookieParser());
+
+  await app.init();
+
+  console.log('✅ NestJS app initialized');
+
+  const redisService = app.get<RedisService>(RedisService);
+
+  return {
+    app,
+    redisContainer,
+    postgresContainer,
+    redisService,
+  };
+}
+
+/**
+ * Stops all containers and closes NestJS app.
+ */
+export async function teardownTestApp(context: TestAppContext | undefined): Promise<void> {
+  if (!context) {
+    console.warn('⚠️  No context to teardown');
+    return;
+  }
+
+  try {
+    if (context.app) {
+      console.log('🔒 Closing NestJS app...');
+      await context.app.close();
+    }
+    if (context.postgresContainer) {
+      console.log('🛑 Stopping Postgres container...');
+      await context.postgresContainer.stop();
+    }
+    if (context.redisContainer) {
+      console.log('🛑 Stopping Redis container...');
+      await context.redisContainer.stop();
+    }
+
+    console.log('✅ Teardown complete');
+  } catch (error) {
+    console.error('❌ Error during teardown:', error);
+  }
+}

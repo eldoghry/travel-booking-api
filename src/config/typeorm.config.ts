@@ -12,7 +12,8 @@ const TYPEORM_CONFIG: TypeOrmModuleAsyncOptions = {
     password: config.get<string>('DB_PASS'),
     database: config.get<string>('DB_NAME'),
     autoLoadEntities: true,
-    logging: config.get<string>('NODE_ENV') === 'development',
+    logging: false,
+    // logging: config.get<string>('NODE_ENV') === 'development',
     synchronize: config.get<string>('NODE_ENV') === 'development', // ❌ use only in dev! In prod, use migrations
   }),
 };

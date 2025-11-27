@@ -7,7 +7,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { QueryFailedError } from 'typeorm';
-import { Response } from 'express';
+import { Response, Request } from 'express';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -16,6 +16,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
+    const request = ctx.getRequest<Request>();
 
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let message = 'Internal server error';
@@ -55,7 +56,16 @@ export class AllExceptionsFilter implements ExceptionFilter {
     }
 
     // Log for debugging / auditing
-    this.logger.error(message, (exception as any)?.stack);
+    // this.logger.error(message, (exception as any)?.stack);
+     this.logger.error({
+      context: AllExceptionsFilter.name,
+      level: 'error',
+      message,
+      path: request.url,
+      errorCode,
+      stack: (exception as any)?.stack,
+      timestamp: new Date().toISOString(),
+    });
 
     // Send formatted JSON response
     response.status(status).json({

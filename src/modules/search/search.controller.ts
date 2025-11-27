@@ -1,0 +1,36 @@
+import { Controller, Get, HttpStatus, Query, Request } from "@nestjs/common";
+import { SearchFlightService } from "./search-flight.service";
+import { Public } from "nest-keycloak-connect";
+import { SearchFlightCriteriaDto } from "./dto/search-flight-criteria.dto";
+import { SearchHotelService } from "./search-hotel.service";
+import { SearchHotelCriteriaDto } from "./dto/search-hotel-criteria.dto";
+import { ApiQuery, ApiResponse } from "@nestjs/swagger";
+import { SearchHotelResponse } from "./interfaces/search-hotel.interface";
+
+@Public()
+@Controller('search')
+export class SearchController {
+  constructor(private readonly searchFlightService: SearchFlightService, private readonly searchHotelService: SearchHotelService) { }
+
+  @Get('flights')
+  @ApiQuery({type: SearchFlightCriteriaDto})
+  async searchFlights(@Query() flightSearchCriteriaDTO: SearchFlightCriteriaDto, @Request() req) {
+    const guestId = req.cookies?.guestId;
+    const userId = req.user?.id;
+    const customerId = userId || guestId;
+
+    const result = await this.searchFlightService.searchFlights(flightSearchCriteriaDTO, customerId);
+    return result;
+  }
+
+  @Get('hotels')
+  @ApiQuery({type: SearchHotelCriteriaDto})
+  async searchHotels(@Query() hotelSearchCriteriaDTO: SearchHotelCriteriaDto, @Request() req) {
+    const guestId = req.cookies?.guestId;
+    const userId = req.user?.id;
+    const customerId = userId || guestId;
+
+    const result = await this.searchHotelService.searchHotels(hotelSearchCriteriaDTO, customerId);
+    return result;
+  }
+}
