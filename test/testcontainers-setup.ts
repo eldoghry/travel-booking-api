@@ -20,7 +20,7 @@ export interface TestAppContext {
   app: INestApplication;
   redisContainer: StartedRedisContainer;
   postgresContainer?: StartedPostgreSqlContainer;
-  redisService: RedisService;
+  redisService: RedisService; 
 }
 
 export interface SetupOptions {
