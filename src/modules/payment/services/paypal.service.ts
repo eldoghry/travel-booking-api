@@ -4,6 +4,7 @@ import { TransactionPaymentStatus } from "src/modules/transaction/enums/transact
 import { HttpService } from "@nestjs/axios";
 import { RedisService } from "src/common/redis/redis.service";
 import { TransactionService } from "src/modules/transaction/transaction.service";
+import { CapturePaymentDto } from "../dto/capture-payment.dto";
 
 @Injectable()
 export class PayPalService {
@@ -67,7 +68,7 @@ export class PayPalService {
         return res.data;
     }
 
-    async captureOrder(orderId: string) {
+    private async captureOrder(orderId: string) {
         const token = await this.getAccessToken();
 
         const res = await firstValueFrom(
@@ -104,37 +105,93 @@ export class PayPalService {
             })
         );
 
-        return res.data;
+        if (res.data.verification_status !== "SUCCESS") {
+            // Log the attempt
+            this.logger.error("PayPal webhook signature verification FAILED");
 
+            // Stop processing
+            throw new Error("Invalid PayPal webhook signature");
+        }
+
+        return true;
     }
 
-    async handleWebhookEvent(event: any) {
-        const type = event.event_type;
-        const resource = event.resource;
+    async handleApprovalPayment(orderId: string) {
+        const transaction = await this.transactionService.getOneTransactionOrFailBy({ orderId });
 
-        switch (type) {
-            case "PAYMENT.CAPTURE.COMPLETED":
-                await this.handlePaymentCompleted(resource);
-                break;
+        await this.transactionService.addTransactionDetail({
+            transactionId: transaction.transactionId,
+            provider: "paypal",
+            action: "approval_payment",
+            requestPayload: { orderId },
+            success: true,
+        });
 
-            case "PAYMENT.CAPTURE.DENIED":
-            case "PAYMENT.CAPTURE.DECLINED":
-                await this.handlePaymentFailed(resource, type);
-                break;
+        await this.transactionService.updateTransaction(transaction.transactionId, {
+            status: TransactionPaymentStatus.APPROVED
+        });
 
-            default:
-                this.logger.log(`Unhandled webhook type: ${type}`);
+        this.logger.log(`Payment approved successfully for order: ${orderId}`);
+    }
+
+    async handleCapturePayment(body: CapturePaymentDto) {
+        const { orderId } = body;
+        const transaction = await this.transactionService.getOneTransactionOrFailBy({ orderId });
+
+        try {
+            const capture = await this.captureOrder(orderId);
+
+            await this.transactionService.addTransactionDetail({
+                transactionId: transaction.transactionId,
+                provider: "paypal",
+                action: "capture_payment",
+                requestPayload: { orderId },
+                responsePayload: capture,
+                success: true,
+            });
+
+            await this.transactionService.updateTransaction(transaction.transactionId, {
+                transactionReference: capture.purchase_units[0]?.reference_id,
+                paymentReference: capture.purchase_units[0]?.payments?.captures[0]?.id,
+                status: TransactionPaymentStatus.CAPTURED
+            });
+
+            this.logger.log("PayPal capture payment successfully", capture);
+
+            return capture;
+
+        } catch (error) {
+            await this.transactionService.addTransactionDetail({
+                transactionId: transaction.transactionId,
+                provider: "paypal",
+                action: "capture_order",
+                requestPayload: { orderId },
+                responsePayload: error?.response?.data || null,
+                success: false,
+                errorStack: {
+                    message: error.message,
+                    stack: error.stack,
+                    details: error?.response?.data,
+                },
+            });
+
+            await this.transactionService.updateTransaction(transaction.transactionId, {
+                status: TransactionPaymentStatus.FAILED
+            });
+
+            this.logger.error("Failed to capture PayPal order", error);
+            throw new BadRequestException("Capture payment failed");
         }
     }
 
-    private async handlePaymentCompleted(resource: any) {
+    async handlePaymentCompleted(resource: any) {
         const orderId = resource.supplementary_data.related_ids.order_id;
         const transaction = await this.transactionService.getOneTransactionOrFailBy({ orderId });
 
         await this.transactionService.addTransactionDetail({
             transactionId: transaction.transactionId,
             provider: "paypal",
-            action: "webhook_event",
+            action: 'webhook_payment_completed',
             requestPayload: resource,
             success: true
         });
@@ -146,20 +203,20 @@ export class PayPalService {
         this.logger.log(`Payment completed successfully for order: ${orderId}`);
     }
 
-    private async handlePaymentFailed(resource: any, eventType: string) {
+    async handlePaymentFailed(resource: any) {
         const orderId = resource.supplementary_data.related_ids.order_id;
         const transaction = await this.transactionService.getOneTransactionOrFailBy({ orderId });
 
         await this.transactionService.addTransactionDetail({
             transactionId: transaction.transactionId,
             provider: "paypal",
-            action: `webhook_${eventType.toLowerCase()}`,
+            action: 'webhook_payment_failed',
             requestPayload: resource,
             success: false,
             errorStack: {
                 message: "Payment failed",
                 stack: "Payment failed",
-                details: { eventType }
+                details: resource
             }
         });
 

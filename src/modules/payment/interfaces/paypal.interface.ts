@@ -15,3 +15,10 @@ export interface PaypalOrderData {
         cancel_url: string;
     };
 }
+
+export interface PayPalWebhookEvent {
+  id: string;
+  event_type: string;
+  resource: any;
+  [key: string]: any;
+}

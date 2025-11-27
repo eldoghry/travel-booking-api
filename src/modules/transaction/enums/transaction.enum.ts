@@ -5,7 +5,7 @@ export enum BookingType {
 
 export enum TransactionPaymentStatus {
     INITIATED = 'INITIATED',           // User started payment
-    CREATED = 'CREATED',               // Order created at PayPal
+    CREATED = 'CREATED',               // Order created at PayPal & waiting for approval
     APPROVED = 'APPROVED',             // Customer approved payment (before capture)
     PENDING = 'PENDING',               // Waiting for external response
     CAPTURED = 'CAPTURED',             // Payment captured successfully
@@ -14,5 +14,6 @@ export enum TransactionPaymentStatus {
     CANCELLED = 'CANCELLED',           // Cancelled by user or system
     REFUNDED = 'REFUNDED',             // Full refund
     PARTIALLY_REFUNDED = 'PARTIALLY_REFUNDED', // Partial refund
-    EXPIRED = 'EXPIRED'                // PayPal session expired
+    EXPIRED = 'EXPIRED',                // PayPal session expired
+    ABANDONED = 'ABANDONED'            // Payment abandoned by user
 }

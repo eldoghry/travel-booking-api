@@ -1,6 +1,5 @@
-import { Body, Controller, Headers, Post, Query, Req } from "@nestjs/common";
+import { Body, Controller, Post, Req } from "@nestjs/common";
 import { PaymentService } from "./services/payment.service";
-import { CapturePaymentDto } from "./dto/capture-payment.dto";
 import { CreatePaymentDto } from "./dto/create-payment.dto";
 import { Public } from "nest-keycloak-connect";
 
@@ -14,8 +13,13 @@ export class PaymentController {
         return this.paymentService.initiatePayment(body);
     }
 
-    @Post('webhook')
-    async handleWebhook(@Req() req: Request, @Query('provider') provider: string) {
-            return this.paymentService.handleWebhook(req, provider);
+    @Post('webhooks/paypal')
+    async handlePayPalWebhooks(@Req() req: Request) {
+        return this.paymentService.handleWebhook(req, 'paypal');
+    }
+
+    @Post('webhooks/stripe')
+    async handleStripeWebhooks(@Req() req: Request) {
+        return this.paymentService.handleWebhook(req, 'stripe');
     }
 }
