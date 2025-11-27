@@ -166,6 +166,8 @@ export class AmadeusFlightProvider implements FlightProvider {
       arrivalTime: it.segments[it.segments.length - 1].arrival.at,
       duration: it.duration,
       stops: it.segments.length - 1,
+      airlineCode: it.segments[0].carrierCode,
+      number: it.segments[0].number,
     }));
 
     return {
@@ -173,6 +175,7 @@ export class AmadeusFlightProvider implements FlightProvider {
       id: flightOffer.id,
       price: {
         currency: flightOffer.price.currency,
+        base: parseFloat(flightOffer.price.base),
         total: parseFloat(flightOffer.price.total),
       },
       numberOfBookableSeats: flightOffer.numberOfBookableSeats,

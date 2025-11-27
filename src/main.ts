@@ -15,6 +15,11 @@ import { WinstonModule } from 'nest-winston';
 import winstonConfig from './config/logger.config';
 import { TransformResponseInterceptor } from './interceptors/transform-response.interceptor';
 import { LoggingInterceptor } from './interceptors/logging.interceptor';
+import cookieParser from 'cookie-parser';
+import { initializeTransactionalContext } from 'typeorm-transactional';
+import { DataSource } from 'typeorm';
+import { addTransactionalDataSource } from 'typeorm-transactional';
+import { json, urlencoded } from 'body-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -24,6 +29,11 @@ async function bootstrap() {
   const logger = new Logger('Bootstrap');
 
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+  // Initialize transactional context
+  initializeTransactionalContext();
+
+  const dataSource = app.get(DataSource);
+  addTransactionalDataSource(dataSource);
 
   // Enable CORS
   app.enableCors({
@@ -31,6 +41,9 @@ async function bootstrap() {
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
+
+  app.use(json({ limit: '10mb' }));
+  app.use(urlencoded({ extended: true, limit: '10mb' }));
 
   // Helmet for secure HTTP headers
   app.use(helmet());
@@ -45,11 +58,12 @@ async function bootstrap() {
     }),
   );
 
-  // Global Response Interceptor for Success to apply consistent response format
-  app.useGlobalInterceptors(new TransformResponseInterceptor());
+  // cookie parser middleware to parse cookies
+  app.use(cookieParser());
 
   // global interceptor
   app.useGlobalInterceptors(
+    new TransformResponseInterceptor(), // Interceptor for Success to apply consistent response format
     new LoggingInterceptor(), // logging interceptor
     new ClassSerializerInterceptor(app.get(Reflector)), // Enable ClassSerializerInterceptor globally to serialize responses
   );

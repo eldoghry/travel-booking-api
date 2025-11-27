@@ -15,12 +15,14 @@ services:
       - app_network
   redis-srv:
     image: redis
+    container_name: redis-srv
     ports:
       - 6804:6379
     networks:
       - app_network
   nginx-srv:
     image: nginx
+    container_name: nginx-srv
     ports:
       - "81:80"
     volumes:
@@ -29,7 +31,8 @@ services:
       - node-app
   postgres-srv:
     image: postgis/postgis:17-3.4
-    #restart: always
+    container_name: postgres-srv
+    restart: always
     # set shared memory limit when using docker-compose
     shm_size: 128mb
     ports:
@@ -50,6 +53,8 @@ services:
       - --hostname-strict=false
       - --proxy-headers=xforwarded
       - --http-relative-path=/
+      # - --features=scripts
+      # - --import-realm # to import realm from json file (keycloak-realm.json)
       # - --hostname-url=http://localhost:8080
       # - --hostname=localhost
     environment:
@@ -61,6 +66,8 @@ services:
       KC_HOSTNAME: localhost
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
+      # KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      # KC_BOOTSTRAP_ADMIN_PASSWORD: admin
     volumes:
       - ./keycloak:/opt/keycloak/data/import
     ports:

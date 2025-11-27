@@ -4,6 +4,7 @@ export class FlightSearchSummary {
   price: {
     currency: string;
     total: number;
+    base: number;
   };
   numberOfBookableSeats: number;
   isRoundTrip: boolean;
@@ -14,6 +15,8 @@ export class FlightSearchSummary {
     arrivalTime: string;
     duration: string;
     stops: number;
+    airlineCode: string;
+    number: string;
   }[];
   airlines: string[];
   lastTicketingDate: string;

@@ -4,6 +4,8 @@ dist
 env/
 .git
 .gitignore
+logs
+*.log
 docker-compose.yaml
 docker-compose.development.yaml
 Dockerfile

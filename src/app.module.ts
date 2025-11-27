@@ -18,6 +18,7 @@ import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AuthModule } from './modules/auth/auth.module';
 import { KeycloakAuthSyncInterceptor } from './modules/auth/interceptors/keycloak-auth.interceptor';
 import { FlightsModule } from './modules/flights/flights.module';
+import { HotelsModule } from './modules/hotels/hotels.module';
 import { AxiosModule } from './common/axios/axios.module';
 import { AmadeusModule } from './common/amadeus/amadeus.module';
 import { RedisModule } from './common/redis/redis.module';
@@ -25,7 +26,9 @@ import { CoreModule } from './modules/core/core.module';
 import { NotificationModule } from './modules/notification/notification.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { WorkerPoolModule } from './modules/worker-pool/worker-pool.module';
-
+import { SearchModule } from './modules/search/search.module';
+import { PaymentModule } from './modules/payment/payment.module';
+import { TransactionModule } from './modules/transaction/transaction.module';
 @Module({
   imports: [
     CoreModule,
@@ -39,10 +42,14 @@ import { WorkerPoolModule } from './modules/worker-pool/worker-pool.module';
     UsersModule,
     AuthModule,
     FlightsModule,
+    HotelsModule,
     AxiosModule,
     AmadeusModule,
     NotificationModule,
     WorkerPoolModule,
+    SearchModule,
+    TransactionModule,
+    PaymentModule,
   ],
   controllers: [AppController],
   providers: [
