@@ -6,11 +6,16 @@ import { PaymentFactory } from "../payment.factory";
 export class PaymentService {
     constructor(
         private readonly paymentFactory: PaymentFactory,
-    ) { } 
+    ) { }
 
     async initiatePayment(body: CreatePaymentDto): Promise<any> {
         const strategy = this.paymentFactory.getStrategy(body.provider);
         return strategy.initiatePayment(body);
+    }
+
+    async capturePayment(body: any): Promise<any> {
+        const strategy = this.paymentFactory.getStrategy(body.provider);
+        return strategy.capturePayment(body);
     }
 
     async handleWebhook(req: Request, provider: string): Promise<any> {
