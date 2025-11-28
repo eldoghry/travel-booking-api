@@ -17,12 +17,14 @@ export class StripeService {
     currency: string,
     idempotencyKey: string,
     metadata: any,
+    captureMethod: 'automatic' | 'manual' = 'automatic',
   ): Promise<Stripe.PaymentIntent> {
     return this.stripe.paymentIntents.create(
       {
         amount,
         currency,
         metadata,
+        capture_method: captureMethod,
         automatic_payment_methods: {
           enabled: true,
         },
@@ -31,6 +33,14 @@ export class StripeService {
         idempotencyKey,
       },
     );
+  }
+
+  async capturePayment(paymentIntentId: string, amountToCapture?: number): Promise<Stripe.PaymentIntent> {
+    const options: Stripe.PaymentIntentCaptureParams = {};
+    if (amountToCapture) {
+      options.amount_to_capture = amountToCapture;
+    }
+    return this.stripe.paymentIntents.capture(paymentIntentId, options);
   }
 
   async retrievePaymentIntent(paymentIntentId: string): Promise<Stripe.PaymentIntent> {

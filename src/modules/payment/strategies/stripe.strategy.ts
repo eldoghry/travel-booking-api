@@ -1,6 +1,6 @@
 import { PaymentStrategy } from '../interfaces/payment-strategy.interface';
 import { CreatePaymentDto } from '../dto/create-payment.dto';
-import { CapturePaymentDto } from '../dto/capture-payment.dto';
+import { CaptureStripePaymentDto } from '../dto/capture-stripe-payment.dto';
 import { Injectable, BadRequestException, NotFoundException, Logger } from '@nestjs/common';
 import { StripeService } from '../services/stripe.service';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -49,7 +49,7 @@ export class StripeStrategy implements PaymentStrategy {
                 transactionId: transaction.transactionId,
                 bookingId,
                 bookingType,
-            });
+            }, 'manual');
 
             const response = {
                 clientSecret: paymentIntent.client_secret,
@@ -114,13 +114,14 @@ export class StripeStrategy implements PaymentStrategy {
         });
     }
 
-    private async createStripePaymentIntent(amount: number, currency: string, key: string, metadata: any) {
+    private async createStripePaymentIntent(amount: number, currency: string, key: string, metadata: any, captureMethod: 'automatic' | 'manual' = 'automatic') {
         this.logger.log(`Creating Stripe PaymentIntent`);
         return await this.stripeService.createPaymentIntent(
             amount * 100, // Stripe expects cents
             currency,
             key,
             metadata,
+            captureMethod
         );
     }
 
@@ -143,9 +144,48 @@ export class StripeStrategy implements PaymentStrategy {
     }
 
     @Transactional()
-    async capturePayment(body: CapturePaymentDto): Promise<any> {
-        // Not implemented for this flow
-        throw new Error('Method not implemented.');
+    async capturePayment(body: CaptureStripePaymentDto): Promise<any> {
+        const { transactionId, amount } = body;
+        this.logger.log(`Capturing payment for transaction ${transactionId}`);
+
+        // 1. Get the transaction
+        const transaction = await this.transactionService.getOneTransactionOrFailBy({ transactionId, relations: ['details' as any]   });
+
+        console.log(transaction);
+
+        // 2. Find the PaymentIntent ID from previous transaction details
+        const detail = transaction.details?.find(
+            (d) => d.action === PaymentAction.CREATE_PAYMENT_INTENT && d.success
+        );
+
+        if (!detail || !detail.responsePayload?.id) {
+            throw new BadRequestException(`No active payment intent found for transaction ${transactionId}`);
+        }
+
+        const paymentIntentId = detail.responsePayload.id;
+
+        try {
+            // 3. Capture the payment
+            // Convert amount to cents if provided, otherwise capture full amount
+            const amountInCents = amount ? amount * 100 : undefined;
+            const capturedIntent = await this.stripeService.capturePayment(paymentIntentId, amountInCents);
+
+            // 4. Record the capture action
+            await this.transactionService.addTransactionDetail({
+                transactionId,
+                provider: PaymentProvider.STRIPE,
+                action: PaymentAction.CAPTURE_PAYMENT,
+                responsePayload: capturedIntent,
+                success: true,
+            });
+
+            this.logger.log(`Payment captured successfully for transaction ${transactionId}`);
+            return capturedIntent;
+
+        } catch (error: any) {
+            this.logger.error(`Failed to capture payment for transaction ${transactionId}`, error.stack);
+            throw error;
+        }
     }
 
     @Transactional()
