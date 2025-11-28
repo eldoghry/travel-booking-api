@@ -79,12 +79,7 @@ export class StripeStrategy implements PaymentStrategy {
         if (!existingKey) return null;
 
         this.logger.log(`Idempotency key found for ${key}, returning existing transaction`);
-        const transaction = await this.transactionService.getTransactionById(existingKey.transactionId);
-
-        if (!transaction) {
-            this.logger.error(`Transaction not found for existing idempotency key: ${key}`);
-            throw new NotFoundException(`Transaction not found for existing idempotency key: ${key}`);
-        }
+        const transaction = await this.transactionService.getOneTransactionOrFailBy({ transactionId: existingKey.transactionId });
 
         const detail = transaction.details?.find(
             (d) => d.action === PaymentAction.CREATE_PAYMENT_INTENT,
@@ -149,7 +144,7 @@ export class StripeStrategy implements PaymentStrategy {
         this.logger.log(`Capturing payment for transaction ${transactionId}`);
 
         // 1. Get the transaction
-        const transaction = await this.transactionService.getOneTransactionOrFailBy({ transactionId, relations: ['details' as any]   });
+        const transaction = await this.transactionService.getOneTransactionOrFailBy({ transactionId, relations: ['details' as any] });
 
         console.log(transaction);
 

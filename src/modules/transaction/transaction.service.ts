@@ -19,13 +19,6 @@ export class TransactionService {
     return transaction;
   }
 
-  async getTransactionById(transactionId: number): Promise<Transaction | null> {
-    return this.transactionRepository.getTransactionBy({
-      transactionId,
-      relations: ['details' as any],
-    });
-  }
-
   @Transactional()
   async addTransactionStatusLog(
     data: Partial<TransactionStatusLog>,
