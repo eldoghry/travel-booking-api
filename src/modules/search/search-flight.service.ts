@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { SearchCacheService } from "./search-cache.service";
 import { SearchFlightCriteriaDto } from "./dto/search-flight-criteria.dto";
-import { FlightItemFormat, SearchFlightResponse } from "./interface/search-flight-response.interface";
+import { FlightItemFormat, SearchFlightResponse } from "./interfaces/search-flight.interface";
 
 @Injectable()
 export class SearchFlightService {
@@ -9,33 +9,28 @@ export class SearchFlightService {
 
     private formatFlightItem(data: any): FlightItemFormat {
         const {
+            provider,
             id,
-            oneWay,
-            itineraries,
+            isRoundTrip,
+            trips,
             price,
             numberOfBookableSeats,
         } = data;
 
 
-        const segmentsData = itineraries[0].segments.map((segment: any) => ({
+        const segmentsData = trips.map((trip: any) => ({
             departure: {
-                iataCode: segment.departure.iataCode,
-                terminal: segment.departure.terminal || null,
-                time: segment.departure.at,
+                iataCode: trip.from,
+                time: trip.departureTime,
             },
             arrival: {
-                iataCode: segment.arrival.iataCode,
-                terminal: segment.arrival.terminal || null,
-                time: segment.arrival.at,
+                iataCode: trip.to,
+                time: trip.arrivalTime,
             },
-            airline: {
-                code: segment.carrierCode,
-                operatingCode: segment.operating?.carrierCode || segment.carrierCode,
-            },
-            flightNumber: segment.number,
-            aircraft: segment.aircraft?.code,
-            duration: segment.duration,
-            stops: segment.numberOfStops
+            airlineCode: trip.airlineCode,
+            flightNumber: trip.airlineCode + trip.number,
+            duration: trip.duration,
+            stops: trip.stops,
         }));
 
 
@@ -47,11 +42,12 @@ export class SearchFlightService {
 
 
         const item = {
+            provider,
             id,
-            oneWay,
+            isRoundTrip,
             availableSeats: numberOfBookableSeats,
             price: formattedPrice,
-            segments: segmentsData,
+            trips: segmentsData,
         };
 
         return item;
@@ -60,7 +56,7 @@ export class SearchFlightService {
     async searchFlights(criteria: SearchFlightCriteriaDto, customerId: string): Promise<SearchFlightResponse> {
         const apiUrl = `${process.env.BASE_URL}/flights/search`;
         const results = await this.searchCacheService.searchWithCache('search-flights', criteria, customerId, apiUrl);
-        const formatedResults = results.data.providerResult.data.map((result: any) => this.formatFlightItem(result));
+        const formatedResults = results.data.summary.map((result: any) => this.formatFlightItem(result));
         return { data: formatedResults };
     }
 }

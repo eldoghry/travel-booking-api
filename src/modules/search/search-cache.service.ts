@@ -4,7 +4,7 @@ import { RedisService } from '../../common/redis/redis.service';
 import * as crypto from 'crypto';
 import { firstValueFrom } from 'rxjs';
 import { SearchFlightCriteriaDto } from './dto/search-flight-criteria.dto';
-import { SearchHotelCriteriaDto } from './dto/search-hotel-criteria.dto';
+import { HotelOffersCriteria } from './interfaces/search-hotel.interface';
 
 @Injectable()
 export class SearchCacheService {
@@ -15,13 +15,13 @@ export class SearchCacheService {
     private readonly httpService: HttpService,
   ) { }
 
-  private generateCacheKey(prefix: string, criteria: SearchFlightCriteriaDto | SearchHotelCriteriaDto, customerId: string) {
+  private generateCacheKey(prefix: string, criteria: SearchFlightCriteriaDto | HotelOffersCriteria, customerId: string) {
     const raw = JSON.stringify({ customerId, criteria });
     const hash = crypto.createHash('sha256').update(raw).digest('hex');
     return `${prefix}:${hash}`;
   }
 
-  async searchWithCache(prefix: string, criteria: SearchFlightCriteriaDto | SearchHotelCriteriaDto, customerId: string, apiUrl: string) {
+  async searchWithCache(prefix: string, criteria: SearchFlightCriteriaDto | HotelOffersCriteria, customerId: string, apiUrl: string) {
     const cacheKey = this.generateCacheKey(prefix, criteria, customerId);
 
     const cached = await this.redisService.get(cacheKey);
