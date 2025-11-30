@@ -29,6 +29,7 @@ import { WorkerPoolModule } from './modules/worker-pool/worker-pool.module';
 import { SearchModule } from './modules/search/search.module';
 import { PaymentModule } from './modules/payment/payment.module';
 import { TransactionModule } from './modules/transaction/transaction.module';
+import { BookingModule } from './modules/booking/booking.module';
 @Module({
   imports: [
     CoreModule,
@@ -50,6 +51,7 @@ import { TransactionModule } from './modules/transaction/transaction.module';
     SearchModule,
     TransactionModule,
     PaymentModule,
+    BookingModule,
   ],
   controllers: [AppController],
   providers: [
