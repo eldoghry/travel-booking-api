@@ -11,8 +11,9 @@ import { HttpModule } from "@nestjs/axios";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { PaymentMethod } from "./entities/payment-method.entity";
 import { PaymentMethodConfig } from "./entities/payment-method-config.entity";
+import { AuditModule } from "../audit/audit.module";
 @Module({
-    imports: [TransactionModule, HttpModule, TypeOrmModule.forFeature([PaymentMethod, PaymentMethodConfig])],
+    imports: [AuditModule, TransactionModule, HttpModule, TypeOrmModule.forFeature([PaymentMethod, PaymentMethodConfig])],
     controllers: [PaymentController],
     providers: [PaymentFactory, StripeStrategy, PayPalStrategy, PaymentService, PayPalService, StripeService],
     exports: [PaymentService],

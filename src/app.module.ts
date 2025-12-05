@@ -29,6 +29,8 @@ import { WorkerPoolModule } from './modules/worker-pool/worker-pool.module';
 import { SearchModule } from './modules/search/search.module';
 import { PaymentModule } from './modules/payment/payment.module';
 import { TransactionModule } from './modules/transaction/transaction.module';
+import { AuditModule } from './modules/audit/audit.module';
+import { RequestContextInterceptor } from './interceptors/request-context.interceptor';
 @Module({
   imports: [
     CoreModule,
@@ -50,6 +52,7 @@ import { TransactionModule } from './modules/transaction/transaction.module';
     SearchModule,
     TransactionModule,
     PaymentModule,
+    AuditModule,
   ],
   controllers: [AppController],
   providers: [
@@ -73,6 +76,10 @@ import { TransactionModule } from './modules/transaction/transaction.module';
     {
       provide: APP_INTERCEPTOR,
       useClass: KeycloakAuthSyncInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: RequestContextInterceptor,
     },
   ],
 })

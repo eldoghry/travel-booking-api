@@ -5,6 +5,8 @@ import { PayPalService } from "../services/paypal.service";
 import { CreatePaymentDto } from "../dto/create-payment.dto";
 import { BadRequestException, Logger, Injectable } from "@nestjs/common";
 import { PayPalWebhookEvent } from "../interfaces/paypal.interface";
+import { PaymentWebhookEventAuditData } from "src/modules/audit/interfaces/payment-audit-data.interface";
+import { AuditEventType } from "src/modules/audit/enums/audit-event.enum";
 
 @Injectable()
 export class PayPalStrategy implements PaymentStrategy {
@@ -25,7 +27,6 @@ export class PayPalStrategy implements PaymentStrategy {
             paymentMethodId,
             amount,
             currency,
-            provider,
             status: TransactionPaymentStatus.INITIATED
         });
 
@@ -55,7 +56,6 @@ export class PayPalStrategy implements PaymentStrategy {
 
 
         } catch (error) {
-
             console.log('error in intiate payment : ', error);
             await this.transactionService.addTransactionDetail({
                 transactionId: transaction.transactionId,
@@ -83,38 +83,49 @@ export class PayPalStrategy implements PaymentStrategy {
     async handleWebhook(req: Request & { body: PayPalWebhookEvent }) {
         try {
             await this.paypalService.verifyWebhookSignature(req);
+
+            const event = req.body;
+            const type = event?.event_type;
+            const resource = event?.resource;
+
+            await this.paypalService.handleAuditPayment({
+                auditEventType: AuditEventType[`PROVIDER_${type.replace(/\./g, "_")}`] ?? AuditEventType.PROVIDER_UNKNOWN,
+                auditData: {
+                    payload: event,
+                    metadata: {
+                        provider: "PayPal"
+                    } as PaymentWebhookEventAuditData['metadata']
+                } as PaymentWebhookEventAuditData
+            })
+
+            switch (type) {
+                // User approved order → you should capture it
+                case "CHECKOUT.ORDER.APPROVED":
+                    const orderId = resource?.id;
+                    await this.paypalService.handleApprovalPayment(orderId);
+                    await this.paypalService.handleCapturePayment({ orderId });
+                    break;
+                // Capture completed → final successful payment
+                case "PAYMENT.CAPTURE.COMPLETED":
+                    await this.paypalService.handlePaymentCompleted(resource);
+                    break;
+                // Capture denied → payment failed
+                case "PAYMENT.CAPTURE.DENIED":
+                case "PAYMENT.CAPTURE.DECLINED":
+                    await this.paypalService.handlePaymentFailed(resource);
+                    break;
+
+                default:
+                    this.logger.log(`Unhandled webhook type: ${type}`);
+            }
+
+            return {
+                status: "OK" // Always respond 200 to PayPal (to avoid paypal retrying)
+            }
         } catch (err) {
-            this.logger.error("Invalid PayPal Webhook detected", err);
-            // return 200 so PayPal stops retrying
-            return { status: "ignored_invalid_signature" };
-        }
-
-        const event = req.body;
-        const type = event?.event_type;
-        const resource = event?.resource;
-        switch (type) {
-            // User approved order → you should capture it
-            case "CHECKOUT.ORDER.APPROVED":
-                const orderId = resource?.id;
-                await this.paypalService.handleApprovalPayment(orderId);
-                await this.paypalService.handleCapturePayment({ orderId });
-                break;
-            // Capture completed → final successful payment
-            case "PAYMENT.CAPTURE.COMPLETED":
-                await this.paypalService.handlePaymentCompleted(resource);
-                break;
-            // Capture denied → payment failed
-            case "PAYMENT.CAPTURE.DENIED":
-            case "PAYMENT.CAPTURE.DECLINED":
-                await this.paypalService.handlePaymentFailed(resource);
-                break;
-
-            default:
-                this.logger.log(`Unhandled webhook type: ${type}`);
-        }
-
-        return {
-            status: "OK" // Always respond 200 to PayPal (to avoid paypal retrying)
+            this.logger.error("Error in webhook", err);
+            
+            return { status: "ignored_error" };
         }
     }
 
