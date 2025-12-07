@@ -86,8 +86,8 @@ export class TransactionService {
             status: data.status ?? TransactionPaymentStatus.INITIATED
         });
 
-        return transaction;
-    }
+    return transaction;
+  }
 
     @Transactional()
     async updateTransaction(transactionId: number, data: Partial<Transaction>): Promise<Transaction | null> {
@@ -109,11 +109,11 @@ export class TransactionService {
             } as PaymentTransactionAuditData<TransactionKeys>
         })
 
-        await this.addTransactionStatusLog({
-            transactionId: transaction?.transactionId,
-            status: data.status
-        });
+    await this.addTransactionStatusLog({
+      transactionId: transaction?.transactionId,
+      status: data.status,
+    });
 
-        return transaction;
-    }
+    return transaction;
+  }
 }

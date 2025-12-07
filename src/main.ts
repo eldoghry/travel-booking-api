@@ -24,6 +24,7 @@ import { json, urlencoded } from 'body-parser';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: WinstonModule.createLogger(winstonConfig),
+    rawBody: true,
   });
   const PORT = process.env.PORT || 3000;
   const logger = new Logger('Bootstrap');
