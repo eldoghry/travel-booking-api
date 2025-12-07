@@ -12,11 +12,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { PaymentMethod } from './entities/payment-method.entity';
 import { PaymentMethodConfig } from './entities/payment-method-config.entity';
 import { IdempotencyKey } from '../transaction/entities/idempotency-key.entity';
-
+import { AuditModule } from "../audit/audit.module";
 @Module({
   imports: [
     TransactionModule,
     HttpModule,
+    AuditModule,
     TypeOrmModule.forFeature([PaymentMethod, PaymentMethodConfig, IdempotencyKey]),
   ],
   controllers: [PaymentController],
@@ -28,6 +29,6 @@ import { IdempotencyKey } from '../transaction/entities/idempotency-key.entity';
     PayPalService,
     StripeService,
   ],
-  exports: [PaymentService],
+  exports: [PaymentService]
 })
-export class PaymentModule {}
+export class PaymentModule { }

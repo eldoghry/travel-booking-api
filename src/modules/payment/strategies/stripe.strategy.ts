@@ -104,7 +104,6 @@ export class StripeStrategy implements PaymentStrategy {
             bookingType: body.bookingType,
             customerId: body.customerId,
             paymentMethodId: body.paymentMethodId,
-            provider: PaymentProvider.STRIPE,
             status: TransactionPaymentStatus.INITIATED,
         });
     }

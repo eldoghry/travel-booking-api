@@ -5,13 +5,14 @@ import { TransactionRepository } from "./transaction.repository";
 import { Transaction } from "./entities/transaction.entity";
 import { TransactionStatusLog } from "./entities/transaction-status_log.entity";
 import { TransactionDetail } from "./entities/transaction-detail.entity";
+import { AuditModule } from "../audit/audit.module";
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Transaction , TransactionStatusLog , TransactionDetail])],
-    providers: [TransactionService , TransactionRepository],
-    exports: [TransactionService , TransactionRepository],
+    imports: [AuditModule, TypeOrmModule.forFeature([Transaction, TransactionStatusLog, TransactionDetail])],
+    providers: [TransactionService, TransactionRepository],
+    exports: [TransactionService, TransactionRepository],
 })
 
 export class TransactionModule {
-    constructor() {}
+    constructor() { }
 }

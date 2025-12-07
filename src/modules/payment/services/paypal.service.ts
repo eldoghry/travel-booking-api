@@ -5,6 +5,9 @@ import { HttpService } from "@nestjs/axios";
 import { RedisService } from "src/common/redis/redis.service";
 import { TransactionService } from "src/modules/transaction/transaction.service";
 import { CapturePaymentDto } from "../dto/capture-payment.dto";
+import { AuditPublisher } from "src/modules/audit/audit.publisher";
+import { Audit } from "src/modules/audit/entities/audit.entity";
+import { PaymentWebhookEventAuditData } from "src/modules/audit/interfaces/payment-audit-data.interface";
 
 @Injectable()
 export class PayPalService {
@@ -14,8 +17,15 @@ export class PayPalService {
     constructor(
         private readonly httpService: HttpService,
         private readonly redisService: RedisService,
-        private readonly transactionService: TransactionService
+        private readonly transactionService: TransactionService,
+        private readonly auditPublisher: AuditPublisher
     ) { }
+
+    async handleAuditPayment(data: Partial<Audit> & {
+        auditData: PaymentWebhookEventAuditData;
+    }) {
+        await this.auditPublisher.publishAudit(data);
+    }
 
     private async getAccessToken(): Promise<string> {
         const cachedAccessToken = await this.redisService.get("paypal_access_token");
@@ -50,8 +60,8 @@ export class PayPalService {
                 amount: { value: amount.toString(), currency_code: currency }
             }],
             application_context: {
-                return_url: `${process.env.BASE_URL}/payment/success`,
-                cancel_url: `${process.env.BASE_URL}/payment/cancelled`
+                return_url: process.env.PAYPAL_RETURN_URL,
+                cancel_url: process.env.PAYPAL_CANCEL_URL
             }
         };
 
