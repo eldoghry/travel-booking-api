@@ -9,6 +9,6 @@ export enum PaymentMethodStatus {
 }
 
 export enum PaymentProvider {
-    PAYPAL = "paypal",
-    STRIPE = "stripe",
+    PAYPAL = "PayPal",
+    STRIPE = "Stripe",
 }

@@ -7,6 +7,7 @@ import { BadRequestException, Logger, Injectable } from "@nestjs/common";
 import { PayPalWebhookEvent } from "../interfaces/paypal.interface";
 import { PaymentWebhookEventAuditData } from "src/modules/audit/interfaces/payment-audit-data.interface";
 import { AuditEventType } from "src/modules/audit/enums/audit-event.enum";
+import { PaymentProvider } from "../enums/payment-methods.enum";
 
 @Injectable()
 export class PayPalStrategy implements PaymentStrategy {
@@ -35,7 +36,7 @@ export class PayPalStrategy implements PaymentStrategy {
 
             await this.transactionService.addTransactionDetail({
                 transactionId: transaction.transactionId,
-                provider: "paypal",
+                provider: PaymentProvider.PAYPAL,
                 action: "create_order",
                 requestPayload: { amount, currency, customerId, bookingType, bookingId, paymentMethodId },
                 responsePayload: order,
@@ -59,7 +60,7 @@ export class PayPalStrategy implements PaymentStrategy {
             console.log('error in intiate payment : ', error);
             await this.transactionService.addTransactionDetail({
                 transactionId: transaction.transactionId,
-                provider: "paypal",
+                provider: PaymentProvider.PAYPAL,
                 action: "create_order",
                 requestPayload: { amount, currency, customerId, bookingType, bookingId, paymentMethodId },
                 responsePayload: error?.response?.data || null,
@@ -93,7 +94,7 @@ export class PayPalStrategy implements PaymentStrategy {
                 auditData: {
                     payload: event,
                     metadata: {
-                        provider: "PayPal"
+                        provider: PaymentProvider.PAYPAL
                     } as PaymentWebhookEventAuditData['metadata']
                 } as PaymentWebhookEventAuditData
             })
