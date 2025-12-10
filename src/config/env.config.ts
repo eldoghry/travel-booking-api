@@ -7,10 +7,8 @@ import * as Joi from 'joi';
 const envValidationSchema = Joi.object({
   // GENERAL
   PORT: Joi.number().default(3000),
-  NODE_ENV: Joi.string()
-    .valid('development', 'production', 'test')
-    .default('development')
-    .trim(),
+  NODE_ENV: Joi.string().valid('development', 'production', 'test').default('development').trim(),
+  DEBUG_MODE: Joi.boolean().default(false),
 
   // DATABASE
   DB_HOST: Joi.string().required(),
@@ -20,18 +18,28 @@ const envValidationSchema = Joi.object({
   DB_NAME: Joi.string().required(),
 
   // REDIS
-  REDIS_URL: Joi.string().required(),
+  REDIS_HOST: Joi.string().required(),
+  REDIS_PORT: Joi.number().default(6379),
+
+  // RABBITMQ
+  RABBIT_MQ_URI: Joi.string().uri().required(),
+
+  // KEYCLOAK
+  KEYCLOAK_AUTH_URL: Joi.string().required(),
+  KEYCLOAK_REALM: Joi.string().required(),
+  KEYCLOAK_CLIENT_ID: Joi.string().required(),
+  KEYCLOAK_CLIENT_SECRET: Joi.string().required(),
+
+  //AMADEUS
+  AMADEUS_API_KEY: Joi.string().required(),
+  AMADEUS_API_SECRET: Joi.string().required(),
+  AMADEUS_API_BASE_URL: Joi.string().uri().required(),
 });
 
 const ENV_CONFIG: ConfigModuleOptions<ValidationPipeOptions> = {
   validationSchema: envValidationSchema,
   isGlobal: true,
-  envFilePath: join(
-    __dirname,
-    '../..',
-    'env',
-    `${process.env.NODE_ENV || 'development'}.env`,
-  ),
+  envFilePath: join(__dirname, '../..', 'env', `${process.env.NODE_ENV || 'development'}.env`),
 };
 
 export default ENV_CONFIG;
