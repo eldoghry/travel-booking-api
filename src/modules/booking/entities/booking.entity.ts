@@ -27,7 +27,7 @@ export abstract class Booking {
   @Index()
   referenceNumber: string;
 
-  @ManyToOne(() => User, { nullable: false, eager: true })
+  @ManyToOne(() => User, { nullable: false, eager: false })
   @JoinColumn({ name: 'userId' })
   user: User;
 
@@ -63,12 +63,6 @@ export abstract class Booking {
 
   @Column({ type: 'timestamp', nullable: true })
   cancelledAt: Date;
-
-  @Column({ type: 'text', nullable: true })
-  cancellationReason: string;
-
-  @Column({ type: 'uuid', nullable: true })
-  cancelledBy: string; // User ID who cancelled the booking
 
   // Abstract methods to be implemented by child classes
   //   abstract getBookingDetails(): any;
