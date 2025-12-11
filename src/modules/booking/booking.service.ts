@@ -27,13 +27,19 @@ export class BookingService {
     private readonly flightService: FlightsService,
   ) {}
 
+  @Transactional()
   async createBooking(dto: FlightBookingRequestDto, user: AuthenticatedUser) {
     // TODO: Implement logic
     //1) validate flight availability
     const handler = new GetFlightSummaryHandler(this.flightService);
 
     handler
-      .setNext(new CreateBookingRecordHandler(this.flightBookingRepository))
+      .setNext(
+        new CreateBookingRecordHandler(
+          this.flightBookingRepository,
+          this.bookingStatusLogRepository,
+        ),
+      )
       .setNext(new CreatePaymentLinkIntentHandler(this.paymentService))
       .setNext(new NotifyUserWithNewBooking(this.eventEmitter));
 

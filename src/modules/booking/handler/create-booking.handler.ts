@@ -6,9 +6,13 @@ import { CreateBookingContext } from './handler.interface';
 import { BookingType } from 'src/modules/transaction/enums/transaction.enum';
 import { BookingStatus } from '../enums/booking-status.enum';
 import { Repository } from 'typeorm';
+import { FlightBookingStatusLog } from '../entities/flight-booking-status.entity';
 
 export class CreateBookingRecordHandler extends CommandHandler<CreateBookingContext> {
-  constructor(private readonly flightBookingRepository: Repository<FlightBooking>) {
+  constructor(
+    private readonly flightBookingRepository: Repository<FlightBooking>,
+    private readonly bookingStatusLogRepository: Repository<FlightBookingStatusLog>,
+  ) {
     super();
   }
 
@@ -23,10 +27,15 @@ export class CreateBookingRecordHandler extends CommandHandler<CreateBookingCont
 
     const savedBooking = await this.flightBookingRepository.save(booking);
 
+    const statusLog = new FlightBookingStatusLog();
+    statusLog.bookingId = savedBooking.id;
+    statusLog.status = savedBooking.status;
+    statusLog.createdAt = savedBooking.createdAt;
+
+    await this.bookingStatusLogRepository.save(statusLog);
+
     context.savedBooking = savedBooking;
 
-    // console.log('CreateBookingRecordHandler', context);
-    console.log('2) CreateBookingRecordHandler');
     return context;
   }
 }

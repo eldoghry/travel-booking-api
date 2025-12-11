@@ -14,8 +14,6 @@ export class GetFlightSummaryHandler extends CommandHandler<CreateBookingContext
       );
 
       context.flightSummary = flightSummary;
-      // console.log('GetFlightSummaryHandler', context);
-      console.log('1) GetFlightSummaryHandler');
       return context;
     } catch (error) {
       console.error('Error in GetFlightSummaryHandler:', error);

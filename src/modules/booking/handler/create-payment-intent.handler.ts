@@ -22,8 +22,6 @@ export class CreatePaymentLinkIntentHandler extends CommandHandler<CreateBooking
 
     context.paymentIntentLink = paymentIntent.approvalUrl;
 
-    // console.log('CreatePaymentLinkIntentHandler', context);
-    console.log('3) CreatePaymentLinkIntentHandler');
     return context;
   }
 }
