@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { NotificationService } from './notification.service';
 import { OnEvent } from '@nestjs/event-emitter';
 import { NotificationEvent } from './enum/notification-event.enum';
+import { BookingType } from '../transaction/enums/transaction.enum';
 
 @Injectable()
 export class NotificationListener {
@@ -50,6 +51,34 @@ export class NotificationListener {
     await this.notificationService.sendSMS(
       event.phone,
       `Your payment of $${event.amount} was successful! Payment ID: ${event.paymentId}`,
+    );
+  }
+
+  @OnEvent(NotificationEvent.BOOKING_CREATED)
+  async handleNewBooking(event: {
+    email: string;
+    bookingReference: string;
+    paymentLink: string;
+    bookingType: BookingType;
+  }) {
+    let emailBody = '';
+    let icon = '';
+
+    if (event.bookingType === BookingType.Flight) {
+      emailBody = `Your flight booking is confirmed! Reference: ${event.bookingReference}. Pay here: ${event.paymentLink}`;
+      icon = '✈️';
+    } else if (event.bookingType === BookingType.Hotel) {
+      emailBody = `Your hotel booking is confirmed! Reference: ${event.bookingReference}. Pay here: ${event.paymentLink}`;
+      icon = '🏨';
+    }
+
+    await this.notificationService.sendEmail(
+      event.email,
+      `Booking Confirmed ${icon}`,
+      'new-booking-template',
+      {
+        body: emailBody,
+      },
     );
   }
 }

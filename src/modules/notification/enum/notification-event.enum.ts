@@ -3,4 +3,6 @@ export enum NotificationEvent {
   FORGET_PASSWORD = 'forget.password',
   PAYMENT_SUCCESS = 'payment.success',
   //   PAYMENT_FAILURE = 'payment.failure',
+
+  BOOKING_CREATED = 'booking.created',
 }
