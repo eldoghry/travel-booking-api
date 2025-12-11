@@ -15,7 +15,7 @@ export class KeycloakAuthSyncInterceptor implements NestInterceptor {
     const keycloakUser = request.user;
 
     if (keycloakUser) {
-      console.log('keycloakUser', keycloakUser);
+      // console.log('keycloakUser', keycloakUser);
       const keycloakId = keycloakUser.sub;
 
       let user = await this.userService.findByKeycloakId(keycloakId);
