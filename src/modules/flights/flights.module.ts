@@ -10,5 +10,6 @@ import { AmadeusModule } from '../../common/amadeus/amadeus.module';
   controllers: [FlightsController],
   providers: [FlightsService, FlightProviderManager, AmadeusFlightProvider, FlightProviderFactory],
   imports: [AmadeusModule],
+  exports: [FlightsService],
 })
 export class FlightsModule {}

@@ -132,4 +132,9 @@ export class FlightsService {
 
   //   return flightPriceOffer;
   // }
+
+  async getFlightSearchSummary(flightOffer: any) {
+    const provider = await this.flightProviderManager.getProvider();
+    return provider.getFlightSearchSummary(flightOffer);
+  }
 }
