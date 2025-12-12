@@ -8,6 +8,7 @@ import { PayPalWebhookEvent } from "../interfaces/paypal.interface";
 import { PaymentWebhookEventAuditData } from "src/modules/audit/interfaces/payment-audit-data.interface";
 import { AuditEventType } from "src/modules/audit/enums/audit-event.enum";
 import { PaymentProvider } from "../enums/payment-methods.enum";
+import { PayPalEventType } from "../enums/paypal.enum";
 
 @Injectable()
 export class PayPalStrategy implements PaymentStrategy {
@@ -35,7 +36,7 @@ export class PayPalStrategy implements PaymentStrategy {
             const order = await this.paypalService.createOrder(amount, currency);
 
             await this.transactionService.addTransactionDetail({
-                transactionId: transaction.transactionId,
+                transactionId: transaction?.transactionId,
                 provider: PaymentProvider.PAYPAL,
                 action: "create_order",
                 requestPayload: { amount, currency, customerId, bookingType, bookingId, paymentMethodId },
@@ -101,18 +102,18 @@ export class PayPalStrategy implements PaymentStrategy {
 
             switch (type) {
                 // User approved order → you should capture it
-                case "CHECKOUT.ORDER.APPROVED":
+                case PayPalEventType.CHECKOUT_ORDER_APPROVED:
                     const orderId = resource?.id;
                     await this.paypalService.handleApprovalPayment(orderId);
                     await this.paypalService.handleCapturePayment({ orderId });
                     break;
                 // Capture completed → final successful payment
-                case "PAYMENT.CAPTURE.COMPLETED":
+                case PayPalEventType.PAYMENT_CAPTURE_COMPLETED:
                     await this.paypalService.handlePaymentCompleted(resource);
                     break;
                 // Capture denied → payment failed
-                case "PAYMENT.CAPTURE.DENIED":
-                case "PAYMENT.CAPTURE.DECLINED":
+                case PayPalEventType.PAYMENT_CAPTURE_DENIED:
+                case PayPalEventType.PAYMENT_CAPTURE_DECLINED:
                     await this.paypalService.handlePaymentFailed(resource);
                     break;
 

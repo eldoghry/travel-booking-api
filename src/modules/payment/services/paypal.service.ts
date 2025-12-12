@@ -60,7 +60,7 @@ export class PayPalService {
                 amount: { value: amount.toString(), currency_code: currency }
             }],
             application_context: {
-                return_url: process.env.PAYPAL_RETURN_URL,
+                return_url: process.env.PAYPAL_REDIRECT_URL,
                 cancel_url: process.env.PAYPAL_CANCEL_URL
             }
         };
