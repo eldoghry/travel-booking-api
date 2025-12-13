@@ -81,4 +81,59 @@ export class NotificationListener {
       },
     );
   }
+
+  @OnEvent(NotificationEvent.BOOKING_CONFIRMED)
+  async handleSuccessBooking(event: {
+    email: string;
+    bookingReference: string;
+    bookingType: BookingType;
+  }) {
+    let emailBody = '';
+    let icon = '';
+
+    if (event.bookingType === BookingType.Flight) {
+      emailBody = `Your flight booking is confirmed! Reference: ${event.bookingReference}.`;
+      icon = '✈️';
+    } else if (event.bookingType === BookingType.Hotel) {
+      emailBody = `Your hotel booking is confirmed! Reference: ${event.bookingReference}.`;
+      icon = '🏨';
+    }
+
+    await this.notificationService.sendEmail(
+      event.email,
+      `Booking Success ${icon}`,
+      'booking-success-template',
+      {
+        body: emailBody,
+      },
+    );
+  }
+
+  @OnEvent(NotificationEvent.BOOKING_CANCELED)
+  async handleFailedBooking(event: {
+    email: string;
+    bookingReference: string;
+    paymentLink: string;
+    bookingType: BookingType;
+  }) {
+    let emailBody = '';
+    let icon = '';
+
+    if (event.bookingType === BookingType.Flight) {
+      emailBody = `Your flight booking reference: ${event.bookingReference} is failed.`;
+      icon = '✈️';
+    } else if (event.bookingType === BookingType.Hotel) {
+      emailBody = `Your hotel booking is reference: ${event.bookingReference} is failed.`;
+      icon = '🏨';
+    }
+
+    await this.notificationService.sendEmail(
+      event.email,
+      `Booking Failed ${icon}`,
+      'booking-failed-template',
+      {
+        body: emailBody,
+      },
+    );
+  }
 }

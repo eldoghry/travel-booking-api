@@ -60,6 +60,7 @@ export class AmadeusAxiosService extends AbstractAxiosService {
     }
 
     // other errors
+    console.dir(error?.response?.data, { depth: null });
     throw new HttpException(
       {
         provider: 'Amadeus',

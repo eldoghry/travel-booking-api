@@ -5,4 +5,6 @@ export enum NotificationEvent {
   //   PAYMENT_FAILURE = 'payment.failure',
 
   BOOKING_CREATED = 'booking.created',
+  BOOKING_CONFIRMED = 'booking.confirmed',
+  BOOKING_CANCELED = 'booking.canceled',
 }

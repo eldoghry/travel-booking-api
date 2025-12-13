@@ -17,6 +17,8 @@ import { BookingStatus } from '../enums/booking-status.enum';
 
 export const BOOKING_ENTITY = 'booking';
 
+export type BookingRelations = 'user';
+
 @Entity(BOOKING_ENTITY)
 @TableInheritance({ column: { type: 'enum', enum: BookingType, name: 'type' } })
 export abstract class Booking {

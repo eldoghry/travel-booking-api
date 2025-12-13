@@ -1,3 +1,4 @@
+import { ProcessBookingOnProvider } from './handler/process-booking/process-booking-flight-on-provider.handler';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { FlightBookingRequestDto } from './dto/create-booking.dto';
 
@@ -10,15 +11,21 @@ import { BookingStatus } from './enums/booking-status.enum';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BookingType } from '../transaction/enums/transaction.enum';
 import { FlightsService } from '../flights/flights.service';
-import { GetFlightSummaryHandler } from './handler/get-flight-summary.handler';
-import { CreateBookingRecordHandler } from './handler/create-booking.handler';
-import { CreatePaymentLinkIntentHandler } from './handler/create-payment-intent.handler';
-import { CreateBookingContext } from './handler/handler.interface';
-import { NotifyUserWithNewBooking } from './handler/notify-new-booking.handler';
+import { GetFlightSummaryHandler } from './handler/create-booking/get-flight-summary.handler';
+import { CreateBookingRecordHandler } from './handler/create-booking/create-booking.handler';
+import { CreatePaymentLinkIntentHandler } from './handler/create-booking/create-payment-intent.handler';
+import { CreateBookingContext, ProcessBookingOnProviderContext } from './handler/handler.interface';
+import { NotifyUserWithNewBooking } from './handler/create-booking/notify-new-booking.handler';
 import { FlightBookingStatusLog } from './entities/flight-booking-status.entity';
 import { Transactional } from 'typeorm-transactional';
-import { Booking } from './entities/booking.entity';
+import { Booking, BookingRelations } from './entities/booking.entity';
 import { canTransition } from './utils/status-transitions';
+import { ConfirmFlightAvailabilityHandler } from './handler/create-booking/confirm-flight-availability.handler';
+import { CancelBookingDto } from './dto/cancel-booking.dto';
+import { ProcessBookingDto } from './dto/process-booking.dto';
+import { RabbitMQService } from '../rabbitmq/rabbitmq.service';
+import { NotifyUserWithBookingStatus } from './handler/process-booking/notify-user-with-booking-status.handler';
+import { UpdateBookingStatusHandler } from './handler/process-booking/update-booking-status.handler';
 
 @Injectable()
 export class BookingService {
@@ -31,11 +38,29 @@ export class BookingService {
     @InjectRepository(FlightBookingStatusLog)
     private readonly bookingStatusLogRepository: Repository<FlightBookingStatusLog>,
     private readonly flightService: FlightsService,
+    private readonly rabbitMQ: RabbitMQService,
   ) {}
 
   @Transactional()
   async createBooking(dto: FlightBookingRequestDto, user: AuthenticatedUser) {
-    //1) validate flight availability
+    const context: CreateBookingContext = {
+      bookingRequestDto: dto,
+      user,
+    };
+
+    // const handler = new ConfirmFlightAvailabilityHandler(this.flightService);
+
+    // handler
+    //   .setNext(new GetFlightSummaryHandler(this.flightService))
+    //   .setNext(
+    //     new CreateBookingRecordHandler(
+    //       this.flightBookingRepository,
+    //       this.bookingStatusLogRepository,
+    //     ),
+    //   )
+    //   .setNext(new CreatePaymentLinkIntentHandler(this.paymentService))
+    //   .setNext(new NotifyUserWithNewBooking(this.eventEmitter));
+
     const handler = new GetFlightSummaryHandler(this.flightService);
 
     handler
@@ -48,11 +73,6 @@ export class BookingService {
       .setNext(new CreatePaymentLinkIntentHandler(this.paymentService))
       .setNext(new NotifyUserWithNewBooking(this.eventEmitter));
 
-    const context: CreateBookingContext = {
-      bookingRequestDto: dto,
-      user,
-    };
-
     const result = await handler.handle(context);
 
     return {
@@ -61,8 +81,46 @@ export class BookingService {
     };
   }
 
-  processBooking() {
-    // TODO: Implement logic
+  async processBooking(dto: ProcessBookingDto) {
+    await this.rabbitMQ.publish('booking', 'booking.confirm', dto);
+  }
+
+  async confirmBooking(dto: ProcessBookingDto) {
+    // 0) get booking & user record.
+    // 1) complete book on amaedues
+    // 2) if success => notify user with success
+    // 3) if fail => send refund request by rabbit mq
+    // 4)         => notify user booking is failed and will refund you soon.
+    // 5) update transaction and booking record
+
+    const bookingDB = await this.findOneBookingByOrFail({
+      bookingId: 1,
+      bookingType: BookingType.Flight,
+      withRelation: ['user'],
+    });
+
+    const context: ProcessBookingOnProviderContext = {
+      bookingDto: dto,
+      bookingStatus: 'pending',
+      bookingDB,
+    };
+
+    const handler = new ProcessBookingOnProvider(this.flightService);
+
+    handler
+      .setNext(
+        new UpdateBookingStatusHandler(
+          this.flightBookingRepository,
+          this.bookingStatusLogRepository,
+        ),
+      )
+      .setNext(new NotifyUserWithBookingStatus(this.eventEmitter));
+
+    const result = await handler.execute(context);
+
+    return {
+      status: result.bookingStatus,
+    };
   }
 
   async findOneBookingByOrFail(dto: {
@@ -70,12 +128,13 @@ export class BookingService {
     bookingId?: number;
     bookingReference?: string;
     bookingType: BookingType;
+    withRelation?: BookingRelations[];
   }) {
     if (!dto.bookingId && !dto.bookingReference) {
       throw new BadRequestException('bookingId or bookingReference are required');
     }
 
-    const { userId, bookingId, bookingReference, bookingType } = dto;
+    const { userId, bookingId, bookingReference, bookingType, withRelation } = dto;
 
     const repository = this.getRepositoryByBookingType(bookingType).bookingRepository;
 
@@ -85,6 +144,7 @@ export class BookingService {
         referenceNumber: bookingReference,
         userId,
       },
+      relations: withRelation,
     });
 
     if (!bookingDB) {
@@ -94,7 +154,12 @@ export class BookingService {
     return bookingDB;
   }
 
-  cancelBooking(dto: { userId: number; bookingId: number; bookingType: BookingType }) {
+  // async processCancelBooking(dto: CancelBookingDto) {
+  //   await this.rabbitMQ.publish('booking', 'booking.cancel', dto);
+  //   return `Flight ${dto.bookingId} with be canceled soon.`;
+  // }
+
+  cancelBooking(dto: CancelBookingDto) {
     return this.updateBookingStatus({ ...dto, bookingStatus: BookingStatus.CANCELLED });
   }
 
