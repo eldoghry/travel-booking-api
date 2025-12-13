@@ -1,6 +1,6 @@
-import { FlightsService } from '../../flights/flights.service';
-import { CommandHandler } from '../../../common/abstract/command-handler.abstract';
-import { CreateBookingContext } from './handler.interface';
+import { FlightsService } from '../../../flights/flights.service';
+import { CommandHandler } from '../../../../common/abstract/command-handler.abstract';
+import { CreateBookingContext } from '../handler.interface';
 import { PaymentService } from 'src/modules/payment/services/payment.service';
 import { BookingType } from 'src/modules/transaction/enums/transaction.enum';
 

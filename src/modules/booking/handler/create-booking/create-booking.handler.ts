@@ -1,12 +1,12 @@
-import { Flight } from './../../flights/entities/flight.entity';
+import { Flight } from '../../../flights/entities/flight.entity';
 import { generateReferenceNumber } from 'src/common/utils/helper';
-import { CommandHandler } from '../../../common/abstract/command-handler.abstract';
-import { FlightBooking } from '../entities/flight-booking.entity';
-import { CreateBookingContext } from './handler.interface';
+import { CommandHandler } from '../../../../common/abstract/command-handler.abstract';
+import { FlightBooking } from '../../entities/flight-booking.entity';
+import { CreateBookingContext } from '../handler.interface';
 import { BookingType } from 'src/modules/transaction/enums/transaction.enum';
-import { BookingStatus } from '../enums/booking-status.enum';
+import { BookingStatus } from '../../enums/booking-status.enum';
 import { Repository } from 'typeorm';
-import { FlightBookingStatusLog } from '../entities/flight-booking-status.entity';
+import { FlightBookingStatusLog } from '../../entities/flight-booking-status.entity';
 
 export class CreateBookingRecordHandler extends CommandHandler<CreateBookingContext> {
   constructor(

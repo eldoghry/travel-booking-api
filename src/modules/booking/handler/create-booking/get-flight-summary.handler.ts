@@ -1,6 +1,6 @@
-import { FlightsService } from '../../flights/flights.service';
-import { CommandHandler } from '../../../common/abstract/command-handler.abstract';
-import { CreateBookingContext } from './handler.interface';
+import { FlightsService } from '../../../flights/flights.service';
+import { CommandHandler } from '../../../../common/abstract/command-handler.abstract';
+import { CreateBookingContext } from '../handler.interface';
 
 export class GetFlightSummaryHandler extends CommandHandler<CreateBookingContext> {
   constructor(private readonly flightService: FlightsService) {
