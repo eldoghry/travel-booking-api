@@ -23,6 +23,14 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
     this.channel = this.connection.createChannel({
       // json: true,
       setup: async (channel: Channel) => {
+        await channel.assertExchange('booking', 'topic', {
+          durable: true,
+        });
+
+        await channel.assertExchange('booking.dlx', 'topic', {
+          durable: true,
+        });
+
         this.queueNames.forEach(async (queue) => {
           await channel.assertQueue(queue, { durable: true });
         });
@@ -47,7 +55,15 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
     });
   }
 
-  async consume(queue: string, callback: (msg: ConsumeMessage) => void, prefetch = 1) {
+  async consume(
+    queue: string,
+    callback: (msg: ConsumeMessage) => void,
+    prefetch = 1,
+    options?: {
+      exchange: string;
+      routingKey: string;
+    },
+  ) {
     await this.channel.addSetup(async (channel) => {
       await channel.prefetch(prefetch);
       await channel.consume(queue, callback);
@@ -60,5 +76,46 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
 
   async nack(message: ConsumeMessage, allUpTo: boolean = false, requeue: boolean = false) {
     this.channel.nack(message, allUpTo, requeue);
+  }
+
+  async publish(exchange: string, routingKey: string, payload: any) {
+    await this.channel.publish(exchange, routingKey, Buffer.from(JSON.stringify(payload)), {
+      persistent: true,
+    });
+  }
+
+  async subscribe<T>(
+    options: {
+      queue: string;
+      exchange: string;
+      routingKey: string;
+      prefetch?: number;
+      deadLetterExchange?: string;
+    },
+    handler: (data: T, raw: ConsumeMessage) => Promise<void>,
+  ) {
+    await this.channel.addSetup(async (channel: Channel) => {
+      await channel.assertQueue(options.queue, {
+        durable: true,
+        deadLetterExchange: options.deadLetterExchange ?? undefined,
+      });
+
+      await channel.bindQueue(options.queue, options.exchange, options.routingKey);
+
+      await channel.prefetch(options.prefetch ?? 1);
+
+      await channel.consume(options.queue, async (msg) => {
+        if (!msg) return;
+
+        try {
+          const data = JSON.parse(msg.content.toString());
+          await handler(data, msg);
+          channel.ack(msg);
+        } catch (err) {
+          console.error('RabbitMQ handler error', err);
+          channel.nack(msg, false, false);
+        }
+      });
+    });
   }
 }

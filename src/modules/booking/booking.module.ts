@@ -7,6 +7,7 @@ import { FlightBooking } from './entities/flight-booking.entity';
 import { FlightBookingController } from './controllers/flight-booking.controller';
 import { FlightsModule } from '../flights/flights.module';
 import { FlightBookingStatusLog } from './entities/flight-booking-status.entity';
+import { BookingConsumer } from './booking.consumer';
 
 @Module({
   imports: [
@@ -16,6 +17,6 @@ import { FlightBookingStatusLog } from './entities/flight-booking-status.entity'
     FlightsModule,
   ],
   controllers: [FlightBookingController],
-  providers: [BookingService],
+  providers: [BookingService, BookingConsumer],
 })
 export class BookingModule {}
