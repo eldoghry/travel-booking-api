@@ -89,7 +89,7 @@ async function bootstrap() {
     new AllExceptionsFilter(),
   );
 
-  await app.listen(PORT, () => {
+  await app.listen(PORT, '0.0.0.0', () => {
     logger.log(`Server is running on http://localhost:${PORT}/api/v1`);
     logger.log(`Swagger: http://localhost:${PORT}/api/docs`);
     logger.log(`Node Environment: [${process.env?.NODE_ENV}]`);
