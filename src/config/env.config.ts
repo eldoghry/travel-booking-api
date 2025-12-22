@@ -34,6 +34,15 @@ const envValidationSchema = Joi.object({
   AMADEUS_API_KEY: Joi.string().required(),
   AMADEUS_API_SECRET: Joi.string().required(),
   AMADEUS_API_BASE_URL: Joi.string().uri().required(),
+
+  //PAYPAL
+  PAYPAL_BASE_URL: Joi.string().uri().required(),
+  PAYPAL_CLIENT_ID: Joi.string().required(),
+  PAYPAL_SECRET_KEY: Joi.string().required(),
+  PAYPAL_REDIRECT_URL: Joi.string().uri().required(),
+  PAYPAL_CANCEL_URL: Joi.string().uri().required(),
+  PAYPAL_WEBHOOK_ID: Joi.string().required(),
+  PAYPAL_MODE: Joi.string().valid('sandbox', 'live').required(),
 });
 
 const ENV_CONFIG: ConfigModuleOptions<ValidationPipeOptions> = {

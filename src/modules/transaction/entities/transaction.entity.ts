@@ -18,7 +18,7 @@ export class Transaction {
     @Column({ nullable: true })
     customerId?: number;
 
-    @Column({ nullable: false, enum: BookingType })
+    @Column({type:'enum', nullable: false, enum: BookingType })
     bookingType!: BookingType;
 
     @Column({ nullable: false })
@@ -42,7 +42,7 @@ export class Transaction {
     @Column({ type: 'varchar', length: 100, unique: true, nullable: true })
     paymentReference!: string;
 
-    @Column({ nullable: false, enum: TransactionPaymentStatus })
+    @Column({type:'enum', nullable: false, enum: TransactionPaymentStatus })
     status!: TransactionPaymentStatus;
 
     @CreateDateColumn()

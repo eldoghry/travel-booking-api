@@ -20,7 +20,7 @@ export class PaymentMethod {
 	@Column({ type: 'integer', default: 0, nullable: false })
 	order!: number; // order of payment method in the list
 
-	@Column({ enum: PaymentMethodStatus, default: PaymentMethodStatus.INACTIVE, nullable: false })
+	@Column({type: 'enum', enum: PaymentMethodStatus, default: PaymentMethodStatus.INACTIVE, nullable: false })
 	status!: PaymentMethodStatus;
 
 	@CreateDateColumn()

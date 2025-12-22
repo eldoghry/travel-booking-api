@@ -14,7 +14,7 @@ const TYPEORM_CONFIG: TypeOrmModuleAsyncOptions = {
     autoLoadEntities: true,
     logging: false,
     // logging: config.get<string>('NODE_ENV') === 'development',
-    synchronize: config.get<string>('NODE_ENV') === 'development', // ❌ use only in dev! In prod, use migrations
+    synchronize: config.get<string>('NODE_ENV') !== 'production', // ❌ use only in dev! In prod, use migrations
   }),
 };
 

@@ -78,7 +78,7 @@ export class PayPalService {
         return res.data;
     }
 
-    private async captureOrder(orderId: string) {
+    async captureOrder(orderId: string) {
         const token = await this.getAccessToken();
 
         const res = await firstValueFrom(
@@ -234,6 +234,6 @@ export class PayPalService {
             status: TransactionPaymentStatus.FAILED
         });
 
-        this.logger.error(`Payment failed for order: ${orderId}`);
+        this.logger.log(`Payment failed for order: ${orderId}`);
     }
 }

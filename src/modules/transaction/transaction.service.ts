@@ -25,7 +25,7 @@ export class TransactionService {
         return transaction;
     }
 
-    private async handleAuditTransaction(data: Partial<Audit> & {
+     async handleAuditTransaction(data: Partial<Audit> & {
         auditData: PaymentTransactionAuditData<TransactionKeys> |
         PaymentTransactionDetailsAuditData<TransactionDetailKeys>;
     }) {

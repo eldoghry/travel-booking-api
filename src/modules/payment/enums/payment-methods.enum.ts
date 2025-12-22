@@ -1,11 +1,11 @@
 export enum PaymentMethodEnum {
-    PAYPAL = 'PAYPAL',
-    STRIPE = 'STRIPE'
+    PAYPAL = 'PayPal',
+    STRIPE = 'Stripe'
 }
 
 export enum PaymentMethodStatus {
-    ACTIVE = 'ACTIVE',
-    INACTIVE = 'INACTIVE'
+    ACTIVE = 'Active',
+    INACTIVE = 'Inactive'
 }
 
 export enum PaymentProvider {
