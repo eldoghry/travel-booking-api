@@ -1,21 +1,44 @@
-FROM node:24 as base
-
-FROM base as development
-
+# =====================
+# Base
+# =====================
+FROM node:20-alpine AS base
 WORKDIR /app
-COPY package.json .
-RUN apt update && npm install --legacy-peer-deps
+
+
+# =====================
+# Development
+# =====================
+FROM base AS development
+COPY package*.json ./
+RUN npm install --legacy-peer-deps
+
 COPY . .
 EXPOSE 4000
-CMD [ "npm","run", "start:dev" ]
+CMD ["npm", "run", "start:dev"]
 
-FROM base as production
 
-WORKDIR /app
-COPY package.json .
-RUN apt update && npm install -y --only=production
-RUN npm install pm2 -g
+# =====================
+# Builder
+# =====================
+FROM base AS builder
+COPY package*.json ./
+RUN npm install --legacy-peer-deps
+
 COPY . .
 RUN npm run build
+
+
+# =====================
+# Production
+# =====================
+FROM base AS production
+COPY package*.json ./
+RUN npm install --omit=dev --legacy-peer-deps \
+  && npm install -g pm2 \
+  && npm cache clean --force
+
+COPY --from=builder /app/dist ./dist
+COPY ecosystem.config.js ./
+
 EXPOSE 4000
-CMD [ "pm2-runtime", "./ecosystem.config.js" ]
+CMD ["pm2-runtime", "ecosystem.config.js"]

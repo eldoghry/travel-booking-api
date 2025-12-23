@@ -6,7 +6,6 @@ env/
 .gitignore
 logs
 *.log
-docker-compose.yaml
-docker-compose.development.yaml
+docker-compose*.yaml
 Dockerfile
-nginx/
+nginx/cache
