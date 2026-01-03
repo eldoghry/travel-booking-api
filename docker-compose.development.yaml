@@ -1,13 +1,42 @@
 services:
   node-app:
-    env_file:
-      - ./env/development.env
     build:
       context: .
       target: development
+    ports:
+      - "4000:4000"
     volumes:
       - .:/app
       - /app/node_modules
+    env_file:
+      - ./env/development.env
     environment:
       - NODE_ENV=development
+    
+  redis-srv:
+    ports:
+      - 6804:6379
+    restart: unless-stopped
+  
+  postgres-srv:
+    ports:
+      - 6805:5432
+    restart: unless-stopped
 
+  keycloak:
+    ports:
+      - "8080:8080"
+
+  rabbitmq-srv:
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    restart: unless-stopped
+
+  elasticsearch:
+    ports:
+      - "9200:9200"
+  
+  kibana:
+    ports:
+      - "5601:5601"

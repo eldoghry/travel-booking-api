@@ -1,0 +1,182 @@
+name: CI/CD - Travel Booking API
+
+# only run on main branch
+on:
+  push:
+    branches: [main]
+
+env:
+  IMAGE_NAME: ghcr.io/randa-magdy/travel-booking-api
+
+jobs:
+  ci:
+    name: Test & Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      # - name: Lint code
+      #   run: npm run lint
+
+      # - name: Run unit tests
+      #   run: npm run test -- --runInBand
+
+      # - name: Run integration tests
+      #   run: npm run test:integration -- --runInBand
+
+      - name: Build application
+        run: npm run build
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.GHCR_USERNAME }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Build & push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.IMAGE_NAME }}:latest
+            ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          target: production # Dockerfile build stage
+
+  create-env:
+    name: Create production.env on server
+    needs: ci
+    runs-on: ubuntu-latest
+    environment: production   # ensures only production secrets are used
+
+    steps:
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Create production.env
+        run: |
+          ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+            mkdir -p /opt/travel-booking/env
+            cat > /opt/travel-booking/env/production.env << 'EOF2'
+              NODE_ENV=production
+              PORT=4000
+              DB_HOST=${{ secrets.DB_HOST }}
+              DB_PORT=${{ secrets.DB_PORT }}
+              DB_NAME=${{ secrets.DB_NAME }}
+              DB_USER=${{ secrets.DB_USER }}
+              DB_PASS=${{ secrets.DB_PASS }}
+              RABBIT_MQ_URI=${{ secrets.RABBIT_MQ_URI }}
+              REDIS_URI=${{ secrets.REDIS_URI }}
+              REDIS_HOST=${{ secrets.REDIS_HOST }}
+              REDIS_PORT=${{ secrets.REDIS_PORT }}
+              AMADEUS_API_KEY=${{ secrets.AMADEUS_API_KEY }}
+              AMADEUS_API_SECRET=${{ secrets.AMADEUS_API_SECRET }}
+              AMADEUS_API_BASE_URL=${{ secrets.AMADEUS_API_BASE_URL }}
+              PAYPAL_CLIENT_ID=${{ secrets.PAYPAL_CLIENT_ID }}
+              PAYPAL_SECRET_KEY=${{ secrets.PAYPAL_SECRET_KEY }}
+              PAYPAL_BASE_URL=${{ secrets.PAYPAL_BASE_URL }}
+              PAYPAL_WEBHOOK_ID=${{ secrets.PAYPAL_WEBHOOK_ID }}
+              PAYPAL_REDIRECT_URL=${{ secrets.PAYPAL_REDIRECT_URL }}
+              PAYPAL_CANCEL_URL=${{ secrets.PAYPAL_CANCEL_URL }}
+              PAYPAL_MODE=${{ secrets.PAYPAL_MODE }}
+              STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }}
+              STRIPE_WEBHOOK_SECRET=${{ secrets.STRIPE_WEBHOOK_SECRET }}
+              KEYCLOAK_AUTH_URL=${{ secrets.KEYCLOAK_AUTH_URL }}
+              KEYCLOAK_REALM=${{ secrets.KEYCLOAK_REALM }}
+              KEYCLOAK_CLIENT_ID=${{ secrets.KEYCLOAK_CLIENT_ID }}
+              KEYCLOAK_PUBLIC_KEY=${{ secrets.KEYCLOAK_PUBLIC_KEY }}
+              KEYCLOAK_CLIENT_SECRET=${{ secrets.KEYCLOAK_CLIENT_SECRET }}
+            EOF2
+          EOF
+
+  deploy:
+    name: Deploy to EC2
+    needs: create-env
+    runs-on: ubuntu-latest
+    environment: production   # ensures only production secrets are used
+
+    steps:
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy application
+        run: |
+          ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+            set -e
+
+            echo "➡️ Ensure app directory exists"
+            sudo mkdir -p /opt/travel-booking
+            sudo chown -R ubuntu:ubuntu /opt/travel-booking
+
+            cd /opt/travel-booking
+
+            echo "➡️ Ensure repository exists"
+            if [ ! -f docker-compose.yaml ]; then
+              git clone https://${{ secrets.GHCR_TOKEN }}@github.com/randa-magdy/booking-platform.git .
+            else
+              git pull origin main
+            fi
+
+            echo "➡️ Login to GHCR"
+            echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "${{ secrets.GHCR_USERNAME }}" --password-stdin
+
+            echo "➡️ Pull latest images"
+            docker compose \
+              -f docker-compose.yaml \
+              -f docker-compose.production.yaml \
+              pull
+
+            echo "➡️ Start containers in background"
+            nohup docker compose \
+              -f docker-compose.yaml \
+              -f docker-compose.production.yaml \
+              up -d --remove-orphans > deploy.log 2>&1 &
+
+            echo "➡️ Cleanup old images"
+            docker image prune -f
+
+            echo "➡️ Waiting for containers to become healthy..."
+            for i in {1..30}; do
+              UNHEALTHY=$(docker ps --filter "health=unhealthy" --format '{{.Names}}')
+              STARTING=$(docker ps --filter "health=starting" --format '{{.Names}}')
+
+              if [ -z "$UNHEALTHY" ] && [ -z "$STARTING" ]; then
+                echo "✅ All containers are healthy"
+                break
+              fi
+
+              echo "⏳ Still waiting..."
+              sleep 5
+            done
+
+            # Fail deploy if still unhealthy
+            if [ -n "$UNHEALTHY" ] || [ -n "$STARTING" ]; then
+              echo "❌ Deployment failed: containers not healthy"
+              docker ps
+              docker logs travel-booking-node-app-1 || true
+              exit 1
+            fi
+
+            echo "➡️ Show running containers"
+            docker ps
+          EOF
